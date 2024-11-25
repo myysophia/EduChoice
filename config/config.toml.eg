@@ -1,0 +1,25 @@
+[mysql]
+addr =
+port =
+user =
+password =
+db =
+config = ""
+maxOpenConns = 0        #最大打开连接数 0为无限制
+maxIdleConns = 10000
+
+[proxy]
+switchon = true
+link =
+
+[log]
+  level = "info"             #日志等级 debug || info || warn || error || dpanic || panic || fatal
+  showLine = true            #是否显示行
+  outType = "file"            #输出位置 console || file || all (console:输出到控制台 file:输出到日志文件 all:我全都要.jpg)
+  console_format = "console" #输出到控制台时的输出格式 json || console
+  file_format = "json"       #输出到文件时的输出格式 json || console
+  director = "log/runtime"   #日志输出目录
+  maxSize = 1                #切割大小(单位:mb)
+  maxBackups = 10            #保留旧日志文件的最大数目(个)
+  maxAge = 7                 #保留旧日志文件的最大天数
+  compress = false           #是否压缩

@@ -1,0 +1,303 @@
+definitions:
+  response.FailMsgResp:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  response.OkMsgDataResp-types_LoginResp:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/types.LoginResp'
+      message:
+        type: string
+    type: object
+  response.OkMsgDataResp-types_ZYMockResp:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/types.ZYMockResp'
+      message:
+        type: string
+    type: object
+  response.OkMsgResp:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  types.HistoryInfo:
+    properties:
+      enrollment_num:
+        type: integer
+      lowest_rank:
+        type: integer
+      lowest_score:
+        description: Year          int `json:"year" form:"year"`
+        type: integer
+    type: object
+  types.LoginResp:
+    properties:
+      token:
+        type: string
+    type: object
+  types.Major:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      rate:
+        type: integer
+      weight:
+        type: integer
+    type: object
+  types.School:
+    properties:
+      history_infos:
+        additionalProperties:
+          $ref: '#/definitions/types.HistoryInfo'
+        type: object
+      id:
+        type: integer
+      name:
+        type: string
+      parts:
+        additionalProperties:
+          items:
+            $ref: '#/definitions/types.Major'
+          type: array
+        type: object
+    type: object
+  types.ZYMockResp:
+    properties:
+      bao_schools:
+        items:
+          $ref: '#/definitions/types.School'
+        type: array
+      chong_schools:
+        items:
+          $ref: '#/definitions/types.School'
+        type: array
+      wen_schools:
+        items:
+          $ref: '#/definitions/types.School'
+        type: array
+    type: object
+info:
+  contact: {}
+paths:
+  /api/v1/auth/email_code:
+    get:
+      consumes:
+      - json;multipart/form-data
+      parameters:
+      - description: email
+        in: formData
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 发送成功
+          schema:
+            $ref: '#/definitions/response.OkMsgResp'
+        "400":
+          description: 发送失败
+          schema:
+            $ref: '#/definitions/response.FailMsgResp'
+      summary: 发送邮箱验证码
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - json;multipart/form-data
+      description: 邮箱，密码登录
+      parameters:
+      - description: email
+        in: formData
+        name: email
+        required: true
+        type: string
+      - description: password
+        in: formData
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登录成功，返回token
+          schema:
+            $ref: '#/definitions/response.OkMsgDataResp-types_LoginResp'
+        "400":
+          description: 登录失败
+          schema:
+            $ref: '#/definitions/response.FailMsgResp'
+      summary: 登录
+  /api/v1/auth/resgister:
+    post:
+      consumes:
+      - json;multipart/form-data
+      description: 邮箱验证码注册
+      parameters:
+      - description: email
+        in: formData
+        name: email
+        required: true
+        type: string
+      - description: username
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: password
+        in: formData
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 注册成功
+          schema:
+            $ref: '#/definitions/response.OkMsgResp'
+        "400":
+          description: 注册失败
+          schema:
+            $ref: '#/definitions/response.FailMsgResp'
+      summary: 注册
+  /api/v1/user/info:
+    post:
+      consumes:
+      - json;multipart/form-data
+      description: 设置用户信息接口
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 省份
+        in: formData
+        name: province
+        required: true
+        type: string
+      - description: 考试类型
+        in: formData
+        name: exam_type
+        required: true
+        type: string
+      - description: 学校类型
+        in: formData
+        name: school_type
+        required: true
+        type: string
+      - description: 科目
+        in: formData
+        name: subject
+        required: true
+        type: object
+      - description: 是否选择物理学
+        in: formData
+        name: subject.formData.physics
+        required: true
+        type: boolean
+      - description: 是否选择历史学
+        in: formData
+        name: subject.formData.history
+        required: true
+        type: boolean
+      - description: 是否选择化学
+        in: formData
+        name: subject.formData.chemistry
+        required: true
+        type: boolean
+      - description: 是否选择生物学
+        in: formData
+        name: subject.formData.biology
+        required: true
+        type: boolean
+      - description: 是否选择地理学
+        in: formData
+        name: subject.formData.geography
+        required: true
+        type: boolean
+      - description: 是否选择政治学
+        in: formData
+        name: subject.formData.politics
+        required: true
+        type: boolean
+      - description: 分数
+        in: formData
+        name: score
+        required: true
+        type: integer
+      - description: 省份排名
+        in: formData
+        name: province_rank
+        required: true
+        type: integer
+      - description: 霍兰德
+        enum:
+        - conventional
+        - investigative
+        - realistic
+        - enterprising
+        - artistic
+        - social
+        in: formData
+        name: holland
+        required: true
+        type: string
+      - collectionFormat: csv
+        description: 兴趣列表
+        in: formData
+        items:
+          type: string
+        name: interests
+        required: true
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新信息成功
+          schema:
+            $ref: '#/definitions/response.OkMsgResp'
+        "400":
+          description: 更新信息失败
+          schema:
+            $ref: '#/definitions/response.FailMsgResp'
+      summary: 设置用户报考信息
+  /api/v1/zy/mock:
+    get:
+      consumes:
+      - json;multipart/form-data
+      parameters:
+      - description: token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            $ref: '#/definitions/response.OkMsgDataResp-types_ZYMockResp'
+        "400":
+          description: 获取模拟报考信息失败
+          schema:
+            $ref: '#/definitions/response.FailMsgResp'
+      summary: 模拟报考
+swagger: "2.0"

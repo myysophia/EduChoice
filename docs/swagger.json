@@ -1,0 +1,453 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/api/v1/auth/email_code": {
+            "get": {
+                "consumes": [
+                    "json;multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "发送邮箱验证码",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "email",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "发送成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.OkMsgResp"
+                        }
+                    },
+                    "400": {
+                        "description": "发送失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.FailMsgResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/login": {
+            "post": {
+                "description": "邮箱，密码登录",
+                "consumes": [
+                    "json;multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "登录",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "email",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "password",
+                        "name": "password",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "登录成功，返回token",
+                        "schema": {
+                            "$ref": "#/definitions/response.OkMsgDataResp-types_LoginResp"
+                        }
+                    },
+                    "400": {
+                        "description": "登录失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.FailMsgResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/resgister": {
+            "post": {
+                "description": "邮箱验证码注册",
+                "consumes": [
+                    "json;multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "注册",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "email",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "username",
+                        "name": "username",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "password",
+                        "name": "password",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "注册成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.OkMsgResp"
+                        }
+                    },
+                    "400": {
+                        "description": "注册失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.FailMsgResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user/info": {
+            "post": {
+                "description": "设置用户信息接口",
+                "consumes": [
+                    "json;multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "设置用户报考信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "省份",
+                        "name": "province",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "考试类型",
+                        "name": "exam_type",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "学校类型",
+                        "name": "school_type",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "object",
+                        "description": "科目",
+                        "name": "subject",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否选择物理学",
+                        "name": "subject.formData.physics",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否选择历史学",
+                        "name": "subject.formData.history",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否选择化学",
+                        "name": "subject.formData.chemistry",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否选择生物学",
+                        "name": "subject.formData.biology",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否选择地理学",
+                        "name": "subject.formData.geography",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否选择政治学",
+                        "name": "subject.formData.politics",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "分数",
+                        "name": "score",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "省份排名",
+                        "name": "province_rank",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "conventional",
+                            "investigative",
+                            "realistic",
+                            "enterprising",
+                            "artistic",
+                            "social"
+                        ],
+                        "type": "string",
+                        "description": "霍兰德",
+                        "name": "holland",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "兴趣列表",
+                        "name": "interests",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新信息成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.OkMsgResp"
+                        }
+                    },
+                    "400": {
+                        "description": "更新信息失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.FailMsgResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/zy/mock": {
+            "get": {
+                "consumes": [
+                    "json;multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "模拟报考",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "$ref": "#/definitions/response.OkMsgDataResp-types_ZYMockResp"
+                        }
+                    },
+                    "400": {
+                        "description": "获取模拟报考信息失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.FailMsgResp"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "response.FailMsgResp": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.OkMsgDataResp-types_LoginResp": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/types.LoginResp"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.OkMsgDataResp-types_ZYMockResp": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/types.ZYMockResp"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.OkMsgResp": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.HistoryInfo": {
+            "type": "object",
+            "properties": {
+                "enrollment_num": {
+                    "type": "integer"
+                },
+                "lowest_rank": {
+                    "type": "integer"
+                },
+                "lowest_score": {
+                    "description": "Year          int `json:\"year\" form:\"year\"`",
+                    "type": "integer"
+                }
+            }
+        },
+        "types.LoginResp": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.Major": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "rate": {
+                    "type": "integer"
+                },
+                "weight": {
+                    "type": "integer"
+                }
+            }
+        },
+        "types.School": {
+            "type": "object",
+            "properties": {
+                "history_infos": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/types.HistoryInfo"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parts": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/types.Major"
+                        }
+                    }
+                }
+            }
+        },
+        "types.ZYMockResp": {
+            "type": "object",
+            "properties": {
+                "bao_schools": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.School"
+                    }
+                },
+                "chong_schools": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.School"
+                    }
+                },
+                "wen_schools": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.School"
+                    }
+                }
+            }
+        }
+    }
+}
