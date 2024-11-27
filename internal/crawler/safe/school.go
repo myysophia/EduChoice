@@ -81,7 +81,7 @@ this:
 		r, _ := strconv.Atoi(rank)
 		score := &school_score.Score{
 			SchoolID:   schooldId,
-			Location:   common.HuBei,
+			Location:   common.ShannXi,
 			Year:       year,
 			TypeId:     type_id,
 			BatchName:  item.LocalBatchName,

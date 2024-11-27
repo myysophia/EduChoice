@@ -38,7 +38,7 @@ func MustGetHistoryRecruit(schoolId int) *response.HistoryRecruitResponse {
 		recruitChan := make(chan *response.HistoryRecruitResponse, 1)
 		for i := 0; i < 2; i++ {
 			go func() {
-				recruit, err := scraper.HistoryRecruit(schoolId, common.HuBei)
+				recruit, err := scraper.HistoryRecruit(schoolId, common.ShannXi)
 				if err != nil {
 					common.LOG.Error("HistoryRecruit:" + err.Error())
 					return
@@ -62,7 +62,7 @@ func MustGetHistoryAdmission(schoolId int) *response.HistoryAdmissionResponse {
 		admissionChan := make(chan *response.HistoryAdmissionResponse, 1)
 		for i := 0; i < 2; i++ {
 			go func() {
-				admission, err := scraper.HistoryAdmission(schoolId, common.HuBei)
+				admission, err := scraper.HistoryAdmission(schoolId, common.ShannXi)
 				if err != nil {
 					common.LOG.Error("HistoryAdmission: Err:" + err.Error())
 					return

@@ -26,14 +26,14 @@ var (
 )
 
 func Migrate() {
-	//MigrateSchoolScores()
-	MigrateSpecialScores()
+	MigrateSchoolScores()
+	//MigrateSpecialScores()
 	//MigratePlanNum()
 }
 
 func MigrateSchoolScores() {
 	defer LOGPageCount()
-	for common.Page <= 145 {
+	for common.Page <= 147 {
 		//学校基础信息
 		list := safe.GetSchoolListSafe(common.Page)
 		common.Page++ //下一页
@@ -97,15 +97,15 @@ func MigrateSchoolScoresOneSafe(i int, item response.Item) {
 	// 学校各省历年分数（这里只针对湖北省）
 	for year := 2021; year <= 2023; year++ {
 		// 物理类
-		scores = append(scores, safe.GetScoresSafe(s.ID, common.HuBei, common.T_Physics, year)...)
+		scores = append(scores, safe.GetScoresSafe(s.ID, common.ShannXi, common.T_Physics, year)...)
 		// 历史类
-		scores = append(scores, safe.GetScoresSafe(s.ID, common.HuBei, common.T_History, year)...)
+		scores = append(scores, safe.GetScoresSafe(s.ID, common.ShannXi, common.T_History, year)...)
 	}
 	for year := 2018; year <= 2020; year++ {
 		// 理科
-		scores = append(scores, safe.GetScoresSafe(s.ID, common.HuBei, common.T_li, year)...)
+		scores = append(scores, safe.GetScoresSafe(s.ID, common.ShannXi, common.T_li, year)...)
 		// 文科
-		scores = append(scores, safe.GetScoresSafe(s.ID, common.HuBei, common.T_wen, year)...)
+		scores = append(scores, safe.GetScoresSafe(s.ID, common.ShannXi, common.T_wen, year)...)
 	}
 	// 去重
 	scoresDistinct := make(map[string]*school_score.Score, 30)

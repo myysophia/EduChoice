@@ -18,7 +18,7 @@ var (
 )
 
 var (
-	HuBei     = 42
+	ShannXi   = 61 // 61为陕西
 	Page      = 1
 	Mu        = &sync.Mutex{}
 	Count     = (Page - 1) * 5
@@ -44,7 +44,7 @@ var (
 )
 
 const (
-	Dream         = "dream_bridge"
+	Dream         = "edu_choice"
 	Conventional  = "conventional"
 	Investigative = "investigative"
 	Realistic     = "realistic"
