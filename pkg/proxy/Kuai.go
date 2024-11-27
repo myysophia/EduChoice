@@ -3,17 +3,20 @@ package proxy
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/big-dust/DreamBridge/internal/pkg/common"
 	"io"
 	"net/http"
 	"net/url"
 	"sync"
 	"time"
+
+	"github.com/big-dust/DreamBridge/internal/pkg/common"
 )
 
 var (
-	IP_PORT string
-	mu      sync.RWMutex
+	PROXY_HOST     = "c885.kdltps.com:15818"
+	PROXY_USERNAME = "t13270460154631"
+	PROXY_PASSWORD = "g2vptx58"
+	mu             sync.RWMutex
 )
 
 type GenProxyIPResponse struct {
@@ -32,7 +35,7 @@ func genProxyIP() (*GenProxyIPResponse, error) {
 			common.LOG.Error(fmt.Sprintf("%v", r))
 		}
 	}()
-	resp, err := http.Get(common.CONFIG.String("proxy.hugeLink"))
+	resp, err := http.Get(common.CONFIG.String("proxy.link"))
 	if err != nil {
 		return nil, err
 	}
@@ -49,58 +52,48 @@ func genProxyIP() (*GenProxyIPResponse, error) {
 }
 
 func ChangeHttpProxyIP() {
-	defer func() {
-		if r := recover(); r != nil {
-			common.LOG.Error(fmt.Sprintf("%v", r))
-		}
-	}()
-	resp, err := genProxyIP()
-	for i := 0; i < 3; i++ {
-		if resp != nil && err == nil {
-			if resp.Code == 200 {
-				break
-			}
-			common.LOG.Info(fmt.Sprintf("change ip: msg: %v", resp.Msg))
-		} else {
-			common.LOG.Info(fmt.Sprintf("change ip: resp: %v err: %s", resp, err.Error()))
-		}
-		time.Sleep(3 * time.Second)
-		resp, err = genProxyIP()
-	}
-	// 尝试获取三次失败，则保持不变
-	if resp == nil || len(resp.Data.ProxyList) == 0 {
+	client, err := NewHttpClientWithProxy()
+	if err != nil {
+		common.LOG.Error("创建代理客户端失败: " + err.Error())
 		return
 	}
 
-	mu.Lock()
-	IP_PORT = resp.Data.ProxyList[0]
-	mu.Unlock()
+	resp, err := client.Get("http://c885.kdltps.com")
+	if err != nil {
+		common.LOG.Error("代理连接测试失败: " + err.Error())
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		common.LOG.Info("代理连接正常")
+	} else {
+		common.LOG.Error(fmt.Sprintf("代理返回异常状态码: %d", resp.StatusCode))
+	}
 }
 
 func NewHttpClientWithProxy() (*http.Client, error) {
 	if !common.CONFIG.Bool("proxy.switchon") {
 		return &http.Client{}, nil
 	}
-	mu.RLock()
-	ip_port := IP_PORT
-	mu.RUnlock()
-	if ip_port == "" {
-		return &http.Client{}, nil
-	}
-	//common.LOG.Info(fmt.Sprintf("proxy url: http://%s", ip_port))
+
+	proxyURL := fmt.Sprintf("http://%s:%s@%s", PROXY_USERNAME, PROXY_PASSWORD, PROXY_HOST)
 	urli := url.URL{}
-	urlproxy, err := urli.Parse(fmt.Sprintf("http://%s", ip_port))
+	urlproxy, err := urli.Parse(proxyURL)
 	if err != nil {
 		common.LOG.Error("URL Parse:" + err.Error())
 		return &http.Client{}, nil
 	}
+
 	client := &http.Client{
-		Timeout: 5 * time.Second,
+		Timeout: 15 * time.Second,
 		Transport: &http.Transport{
-			Proxy: http.ProxyURL(urlproxy),
-			//TLSClientConfig:     &tls.Config{},
-			//TLSHandshakeTimeout: 0,
+			Proxy:              http.ProxyURL(urlproxy),
+			MaxIdleConns:       100,
+			IdleConnTimeout:    90 * time.Second,
+			DisableCompression: true,
 		},
 	}
+
 	return client, nil
 }

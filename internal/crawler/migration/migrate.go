@@ -12,9 +12,11 @@ import (
 	"github.com/big-dust/DreamBridge/internal/model/school_score"
 	"github.com/big-dust/DreamBridge/internal/pkg/algo"
 	"github.com/big-dust/DreamBridge/internal/pkg/common"
+	"github.com/big-dust/DreamBridge/pkg/proxy"
 	"runtime/debug"
 	"strconv"
 	"sync"
+	"time"
 )
 
 var (
@@ -37,8 +39,8 @@ func MigrateSchoolScores() {
 		//学校基础信息
 		list := safe.GetSchoolListSafe(common.Page)
 		common.Page++ //下一页
-		//proxy.ChangeHttpProxyIP()
-		//time.Sleep(2 * time.Second)
+		proxy.ChangeHttpProxyIP()
+		time.Sleep(2 * time.Second)
 		for i, item := range list.Data.Item {
 			wgSchool.Add(1)
 			go MigrateSchoolScoresOneSafe(i, item)
