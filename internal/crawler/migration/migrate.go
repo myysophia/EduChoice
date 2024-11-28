@@ -29,8 +29,8 @@ var (
 
 func Migrate() {
 	//MigrateSchoolScores()
-	MigrateSpecialScores()
-	//MigratePlanNum()
+	//MigrateSpecialScores()
+	MigratePlanNum()
 }
 
 func MigrateSchoolScores() {
@@ -268,7 +268,9 @@ func MigratePlanNum() {
 	for _, schoolId := range list {
 		limitCh <- struct{}{}
 		wgPlan.Add(1)
-		go MigrateOneSchoolPlan(schoolId, limitCh)
+		// go MigrateOneSchoolPlan(schoolId, limitCh)
+		MigrateOneSchoolPlan(schoolId, limitCh)
+		time.Sleep(500 * time.Millisecond)
 	}
 	wgPlan.Wait()
 }
@@ -318,32 +320,32 @@ func MigrateOneSchoolPlan(schoolId int, limitCh <-chan struct{}) {
 			schoolNums = append(schoolNums, sn)
 		}
 	}
-	for year := 2018; year <= 2020; year++ {
-		for _, typeId := range common.TypeIdsWL {
-			sum := 0
-			for _, batchId := range common.BatchIds {
-				for page := 1; page < 10; page++ {
-					plan := must.GetPlanInfo(schoolId, 61, year, typeId, batchId, page, 10)
-					if len(plan.Data.Item) == 0 {
-						break
-					}
-					for _, item := range plan.Data.Item {
-						num, err := strconv.Atoi(item.Num)
-						if err != nil {
-							common.LOG.Error("strconv.Atoi(item.Num): " + err.Error())
-						}
-						sum += num
-					}
-				}
-			}
-			sn := &school_num.SchoolNum{
-				SchoolID: schoolId,
-				Year:     year,
-				TypeID:   typeId,
-				Number:   sum,
-			}
-			schoolNums = append(schoolNums, sn)
-		}
-	}
+	//for year := 2018; year <= 2020; year++ {
+	//	for _, typeId := range common.TypeIdsWL {
+	//		sum := 0
+	//		for _, batchId := range common.BatchIds {
+	//			for page := 1; page < 10; page++ {
+	//				plan := must.GetPlanInfo(schoolId, 61, year, typeId, batchId, page, 10)
+	//				if len(plan.Data.Item) == 0 {
+	//					break
+	//				}
+	//				for _, item := range plan.Data.Item {
+	//					num, err := strconv.Atoi(item.Num)
+	//					if err != nil {
+	//						common.LOG.Error("strconv.Atoi(item.Num): " + err.Error())
+	//					}
+	//					sum += num
+	//				}
+	//			}
+	//		}
+	//		sn := &school_num.SchoolNum{
+	//			SchoolID: schoolId,
+	//			Year:     year,
+	//			TypeID:   typeId,
+	//			Number:   sum,
+	//		}
+	//		schoolNums = append(schoolNums, sn)
+	//	}
+	//}
 	must.SchoolNumCreate(schoolNums)
 }
