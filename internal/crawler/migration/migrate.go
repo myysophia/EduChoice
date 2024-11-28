@@ -145,6 +145,7 @@ func MigrateSpecialScores() {
 		wgSpecial.Add(1)
 		//go MigrateSpecialScoresOneSafe(schoolId)
 		MigrateSpecialScoresOneSafe(schoolId)
+		time.Sleep(500 * time.Millisecond)
 	}
 	wgSpecial.Wait()
 }
