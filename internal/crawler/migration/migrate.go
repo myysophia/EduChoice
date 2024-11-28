@@ -28,8 +28,8 @@ var (
 )
 
 func Migrate() {
-	MigrateSchoolScores()
-	//MigrateSpecialScores()
+	//MigrateSchoolScores()
+	MigrateSpecialScores()
 	//MigratePlanNum()
 }
 
@@ -96,7 +96,7 @@ func MigrateSchoolScoresOneSafe(i int, item response.Item) {
 		DoubleFirstClassDisciplines: text,
 	}
 	var scores []*school_score.Score
-	// 学校各省历年分数（这里只针对湖北省）
+	// 学校各省历年分数（这里只针对陕西省）
 	for year := 2021; year <= 2023; year++ {
 		// 物理类
 		scores = append(scores, safe.GetScoresSafe(s.ID, common.ShannXi, common.T_Physics, year)...)
@@ -199,7 +199,7 @@ func MigrateSpecialScoresOneSafe(schoolId int) {
 				keleiStr := common.Kelei(kelei_id)
 				score := &major_score.MajorScore{
 					SpecialID:         major_id,
-					Location:          "湖北",
+					Location:          "陕西",
 					Year:              year,
 					Kelei:             keleiStr,
 					Batch:             yearInfo.Batch,
@@ -207,7 +207,7 @@ func MigrateSpecialScoresOneSafe(schoolId int) {
 					LowestScore:       0,
 					LowestRank:        0,
 				}
-				key := fmt.Sprintf("%d-%s-%d-%s-%s", major_id, "湖北", year, keleiStr, yearInfo.Batch)
+				key := fmt.Sprintf("%d-%s-%d-%s-%s", major_id, "陕西", year, keleiStr, yearInfo.Batch)
 				if _, exist := scores[key]; !exist {
 					scores[key] = score
 					continue
@@ -226,14 +226,14 @@ func MigrateSpecialScoresOneSafe(schoolId int) {
 				major_id, _ := strconv.Atoi(major_id)
 				year, _ := strconv.Atoi(yearInfo.Year)
 				keleiStr := common.Kelei(kelei_id)
-				key := fmt.Sprintf("%d-%s-%d-%s-%s", major_id, "湖北", year, keleiStr, yearInfo.Batch)
+				key := fmt.Sprintf("%d-%s-%d-%s-%s", major_id, "陕西", year, keleiStr, yearInfo.Batch)
 				lowestScore, _ := strconv.Atoi(yearInfo.Min)
 				rank, _ := strconv.Atoi(fmt.Sprintf("%v", yearInfo.MinSection))
 				score, exist := scores[key]
 				if !exist {
 					score := &major_score.MajorScore{
 						SpecialID:         major_id,
-						Location:          "湖北",
+						Location:          "陕西",
 						Year:              year,
 						Kelei:             keleiStr,
 						Batch:             yearInfo.Batch,
@@ -294,7 +294,7 @@ func MigrateOneSchoolPlan(schoolId int, limitCh <-chan struct{}) {
 			sum := 0
 			for _, batchId := range common.BatchIds {
 				for page := 1; page < 10; page++ {
-					plan := must.GetPlanInfo(schoolId, 42, year, typeId, batchId, page, 10)
+					plan := must.GetPlanInfo(schoolId, 61, year, typeId, batchId, page, 10)
 					if len(plan.Data.Item) == 0 {
 						break
 					}
@@ -322,7 +322,7 @@ func MigrateOneSchoolPlan(schoolId int, limitCh <-chan struct{}) {
 			sum := 0
 			for _, batchId := range common.BatchIds {
 				for page := 1; page < 10; page++ {
-					plan := must.GetPlanInfo(schoolId, 42, year, typeId, batchId, page, 10)
+					plan := must.GetPlanInfo(schoolId, 61, year, typeId, batchId, page, 10)
 					if len(plan.Data.Item) == 0 {
 						break
 					}

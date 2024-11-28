@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	PROXY_HOST     = "c885.kdltps.com:15818"
-	PROXY_USERNAME = "t13270460154631"
-	PROXY_PASSWORD = "g2vptx58"
+	PROXY_HOST     = "r449.kdltpspro.com:15818"
+	PROXY_USERNAME = "t13275952209563"
+	PROXY_PASSWORD = "t1vjrjlx"
 	mu             sync.RWMutex
 )
 
@@ -58,7 +58,7 @@ func ChangeHttpProxyIP() {
 		return
 	}
 
-	resp, err := client.Get("http://c885.kdltps.com")
+	resp, err := client.Get("http://r449.kdltpspro.com")
 	if err != nil {
 		common.LOG.Error("代理连接测试失败: " + err.Error())
 		return

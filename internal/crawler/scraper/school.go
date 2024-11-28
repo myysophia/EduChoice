@@ -133,8 +133,8 @@ func ProvinceScore(schoolId int, provinceId int, typeId int, year int) (*respons
 	if err != nil {
 		return nil, err
 	}
-	var data = strings.NewReader(`{"e_sort":"zslx_rank,min","e_sorttype":"desc,desc","local_province_id":` + strconv.Itoa(provinceId) + `,"local_type_id":` + strconv.Itoa(typeId) + `,"page":1,"school_id":"` + strconv.Itoa(schoolId) + `","signsafe":"9b95450230606462623e5b42b78e464f","size":10,"uri":"apidata/api/gk/score/province","year":` + strconv.Itoa(year) + `}`)
-	url := fmt.Sprintf("https://api.zjzw.cn/web/api/?e_sort=zslx_rank,min&e_sorttype=desc,desc&local_province_id=%d&local_type_id=%d&page=1&school_id=%d&size=10&uri=apidata/api/gk/score/province&year=%d&signsafe=9b95450230606462623e5b42b78e464f", provinceId, typeId, schoolId, year)
+	var data = strings.NewReader(`{"e_sort":"zslx_rank,min","e_sorttype":"desc,desc","local_province_id":` + strconv.Itoa(provinceId) + `,"local_type_id":` + strconv.Itoa(typeId) + `,"page":1,"school_id":"` + strconv.Itoa(schoolId) + `","signsafe":"9b95450230606462623e5b61b78e464f","size":10,"uri":"apidata/api/gk/score/province","year":` + strconv.Itoa(year) + `}`)
+	url := fmt.Sprintf("https://api.zjzw.cn/web/api/?e_sort=zslx_rank,min&e_sorttype=desc,desc&local_province_id=%d&local_type_id=%d&page=1&school_id=%d&size=10&uri=apidata/api/gk/score/province&year=%d&signsafe=9b95450230606462623e5b61b78e464f", provinceId, typeId, schoolId, year)
 	req, err := http.NewRequest("POST", url, data)
 	if err != nil {
 		return nil, err

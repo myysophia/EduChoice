@@ -58,7 +58,7 @@ func SpecialInfo(schoolId int) (*response.SpecialResponse[response.SpecialList],
 	return specialList, nil
 }
 
-// 湖北locationId = 42
+// 陕西locationId = 61
 func HistoryRecruit(schoolId int, locationId int) (*response.HistoryRecruitResponse, error) {
 	client := &http.Client{}
 	url := fmt.Sprintf("https://static-data.gaokao.cn/www/2.0/history_recruit/%d/%d.json", schoolId, locationId)
