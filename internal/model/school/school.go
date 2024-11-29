@@ -50,7 +50,9 @@ func FindOne(id int) (*School, error) {
 // 查询记录
 func GetSchoolIdList() ([]int, error) {
 	var schoolIdList []int
-	if err := common.DB.Model(&School{}).Select("id").Find(&schoolIdList).Error; err != nil {
+	if err := common.DB.Model(&School{}).Select("id").
+		Where("id = 140").
+		Find(&schoolIdList).Error; err != nil {
 		return nil, err
 	}
 	return schoolIdList, nil

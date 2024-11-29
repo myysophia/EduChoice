@@ -29,8 +29,8 @@ var (
 
 func Migrate() {
 	//MigrateSchoolScores()
-	//MigrateSpecialScores()
-	MigratePlanNum()
+	MigrateSpecialScores()
+	//MigratePlanNum()
 }
 
 func MigrateSchoolScores() {
@@ -48,6 +48,23 @@ func MigrateSchoolScores() {
 	}
 	wgSchool.Wait()
 }
+
+// 使用已存在的school 数据
+//func MigrateSchoolScoresWithExistSchool() {
+//	defer LOGPageCount()
+//	for common.Page <= 147 {
+//		//学校基础信息
+//		list := safe.GetSchoolListSafe(1)
+//		common.Page++ //下一页
+//		proxy.ChangeHttpProxyIP()
+//		time.Sleep(2 * time.Second)
+//		for i, item := range list.Data.Item {
+//			wgSchool.Add(1)
+//			go MigrateSchoolScoresOneSafe(i, item)
+//		}
+//	}
+//	wgSchool.Wait()
+//}
 
 func MigrateSchoolScoresOneSafe(i int, item response.Item) {
 	defer func() {
@@ -97,13 +114,13 @@ func MigrateSchoolScoresOneSafe(i int, item response.Item) {
 	}
 	var scores []*school_score.Score
 	// 学校各省历年分数（这里只针对陕西省）
-	for year := 2021; year <= 2023; year++ {
-		// 物理类
-		scores = append(scores, safe.GetScoresSafe(s.ID, common.ShannXi, common.T_Physics, year)...)
-		// 历史类
-		scores = append(scores, safe.GetScoresSafe(s.ID, common.ShannXi, common.T_History, year)...)
-	}
-	for year := 2018; year <= 2020; year++ {
+	//for year := 2021; year <= 2023; year++ {
+	//	// 物理类
+	//	scores = append(scores, safe.GetScoresSafe(s.ID, common.ShannXi, common.T_Physics, year)...)
+	//	// 历史类
+	//	scores = append(scores, safe.GetScoresSafe(s.ID, common.ShannXi, common.T_History, year)...)
+	//}
+	for year := 2020; year <= 2024; year++ {
 		// 理科
 		scores = append(scores, safe.GetScoresSafe(s.ID, common.ShannXi, common.T_li, year)...)
 		// 文科
@@ -166,7 +183,7 @@ func MigrateSpecialScoresOneSafe(schoolId int) {
 		mu.RUnlock()
 	}()
 
-	specialInfos := safe.MustGetSpecialInfoSafe(schoolId)
+	specialInfos := safe.MustGetSpecialInfoSafe(schoolId) // 学校的所有专业
 
 	// 拿到school的所有专业
 	var specials []*major.Major

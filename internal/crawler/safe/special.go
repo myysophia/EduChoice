@@ -38,7 +38,7 @@ func MustGetHistoryRecruit(schoolId int) *response.HistoryRecruitResponse {
 		recruitChan := make(chan *response.HistoryRecruitResponse, 1)
 		for i := 0; i < 2; i++ {
 			go func() {
-				recruit, err := scraper.HistoryRecruit(schoolId, common.ShannXi)
+				recruit, err := scraper.HistoryRecruit(schoolId, common.ShannXi) // 根据schoolID 和 省份获取对应的专业
 				if err != nil {
 					common.LOG.Error("HistoryRecruit:" + err.Error())
 					return
