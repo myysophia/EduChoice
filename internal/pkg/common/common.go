@@ -30,7 +30,7 @@ var (
 	// 21年前本科二批8,本科一批7，专科批10
 	BatchIds           = []int{7, 8, 10, 14}
 	TypeIdsPH          = []string{"2074", "2073"}
-	TypeIdsWL          = []string{"1", "2"}
+	TypeIdsWL          = []int{1, 2}
 	HollandMajorMap    = make(map[string]map[string]bool)
 	HollandMajorSlice  = make(map[string][]string)
 	NationalFocus      map[string]bool

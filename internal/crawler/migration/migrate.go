@@ -29,8 +29,10 @@ var (
 
 func Migrate() {
 	//MigrateSchoolScores()
-	MigrateSpecialScores()
+	//MigrateSpecialScores()
 	//MigratePlanNum()
+
+	MigrateSpecialScoresHis()
 }
 
 func MigrateSchoolScores() {
