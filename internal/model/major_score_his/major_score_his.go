@@ -3,49 +3,50 @@ package major_score_his
 import (
 	"database/sql"
 	"fmt"
-	"github.com/big-dust/DreamBridge/internal/pkg/common"
 	"time"
+
+	"github.com/big-dust/DreamBridge/internal/pkg/common"
 )
 
 // MajorScoreHis 定义专业历史分数表的模型
 type MajorScoreHis struct {
-	ID                string `gorm:"primary_key"` // 如 gkspecialscore2023295809
-	SchoolID          int    `gorm:"index"`       // 学校ID
-	SpecialID         int    `gorm:"index"`       // 专业ID
-	SpeID             int    // 特殊专业ID
-	Year              int    `gorm:"index"` // 年份
-	SpName            string // 专业名称
-	SpInfo            string // 专业信息
-	Info              string // 额外信息（如：钱学森班本研一体）
-	LocalProvinceName string // 省份
-	LocalTypeName     string // 科类
-	LocalBatchName    string // 批次
-	Level2Name        string // 二级学科名称
-	Level3Name        string // 三级学科名称
-	Average           int    // 平均分
-	Max               int    // 最高分
-	Min               int    // 最低分
-	MinSection        int    // 最低位次
-	Proscore          int    // 投档分
-	DoubleHigh        int    // 是否双高
-	IsTop             int    // 是否重点
-	IsScoreRange      int    // 分数范围标识
-	MinRange          string // 最低分范围
-	MinRankRange      string // 最低排名范围
-	Remark            string // 备注
-	ZslxName          string // 招生类型名称
-	DualClassName     string // 双学位类名称
-	FirstKm           int    // 首选科目
-	SgFxk             string // 选考科目要求
-	SgSxk             string // 首选科目要求
-	SgInfo            string // 选考科目信息
-	SgName            string // 选考科目组名称
-	SgType            int    // 选考科目类型
-	SpFxk             string // 专业选考科目要求
-	SpSxk             string // 专业首选科目要求
-	SpType            int    // 专业类型
-	Single            string // 单科要求
-	SpecialGroup      int    // 专业组
+	ID                string `json:"id"`
+	SchoolID          int    `json:"school_id"`
+	SpecialID         int    `json:"special_id"`
+	SpeID             int    `json:"spe_id"`
+	Year              int    `json:"year"`
+	SpName            string `json:"sp_name"`
+	SpInfo            string `json:"sp_info"`
+	Info              string `json:"info"`
+	LocalProvinceName string `json:"local_province_name"`
+	LocalTypeName     string `json:"local_type_name"`
+	LocalBatchName    string `json:"local_batch_name"`
+	Level2Name        string `json:"level2_name"`
+	Level3Name        string `json:"level3_name"`
+	Average           string `json:"average"`
+	Max               string `json:"max"`
+	Min               string `json:"min"`
+	MinSection        int    `json:"min_section"`
+	Proscore          int    `json:"proscore"`
+	DoubleHigh        int    `json:"doublehigh"`
+	IsTop             int    `json:"is_top"`
+	IsScoreRange      int    `json:"is_score_range"`
+	MinRange          string `json:"min_range"`
+	MinRankRange      string `json:"min_rank_range"`
+	Remark            string `json:"remark"`
+	ZslxName          string `json:"zslx_name"`
+	DualClassName     string `json:"dual_class_name"`
+	FirstKm           int    `json:"first_km"`
+	SgFxk             string `json:"sg_fxk"`
+	SgSxk             string `json:"sg_sxk"`
+	SgInfo            string `json:"sg_info"`
+	SgName            string `json:"sg_name"`
+	SgType            int    `json:"sg_type"`
+	SpFxk             string `json:"sp_fxk"`
+	SpSxk             string `json:"sp_sxk"`
+	SpType            int    `json:"sp_type"`
+	Single            string `json:"single"`
+	SpecialGroup      int    `json:"special_group"`
 }
 
 // CreateMajorScoresHis 创建历史分数记录

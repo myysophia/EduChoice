@@ -3,12 +3,13 @@ package migration
 import (
 	"encoding/json"
 	"fmt"
+	"runtime/debug"
+	"time"
+
 	"github.com/big-dust/DreamBridge/internal/crawler/safe"
 	"github.com/big-dust/DreamBridge/internal/model/major_score_his"
 	"github.com/big-dust/DreamBridge/internal/model/school"
 	"github.com/big-dust/DreamBridge/internal/pkg/common"
-	"runtime/debug"
-	"time"
 )
 
 func MigrateSpecialScoresHis() {
@@ -77,7 +78,7 @@ func MigrateSpecialScoresHisOneSafe(schoolId int) {
 							Min:               item.Min,
 							MinSection:        item.MinSection,
 							Proscore:          item.Proscore,
-							DoubleHigh:        item.DoubleHigh,
+							DoubleHigh:        item.Doublehigh,
 							IsTop:             item.IsTop,
 							IsScoreRange:      item.IsScoreRange,
 							MinRange:          item.MinRange,
@@ -101,7 +102,7 @@ func MigrateSpecialScoresHisOneSafe(schoolId int) {
 					}
 
 					// 如果当前页的数据量小于size，说明已经是最后一页
-					if len(scores.Data.Item) < scores.Data.PageSize {
+					if len(scores.Data.Item) < 10 {
 						break
 					}
 					page++
