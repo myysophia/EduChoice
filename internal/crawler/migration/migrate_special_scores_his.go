@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime/debug"
+	"strings"
 	"time"
 
 	"github.com/big-dust/DreamBridge/internal/crawler/safe"
@@ -60,7 +61,7 @@ func MigrateSpecialScoresHisOneSafe(schoolId int) {
 
 					for _, item := range scores.Data.Item {
 						score := &major_score_his.MajorScoreHis{
-							ID:                item.ID,
+							ID:                processID(item.ID),
 							SchoolID:          item.SchoolID,
 							SpecialID:         item.SpecialID,
 							SpeID:             item.SpeID,
@@ -124,4 +125,10 @@ func mustAtoi(n json.Number) int {
 		return 0
 	}
 	return int(i)
+}
+
+// 添加新的辅助函数来处理ID
+func processID(originalID string) string {
+	// 移除"gkspecialscore"前缀
+	return strings.TrimPrefix(originalID, "gkspecialscore")
 }
