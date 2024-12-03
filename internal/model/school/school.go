@@ -2,9 +2,10 @@ package school
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/big-dust/DreamBridge/internal/model/school_score"
 	"github.com/big-dust/DreamBridge/internal/pkg/common"
-	"time"
 )
 
 // 定义 Schools 表格的模型
@@ -51,7 +52,7 @@ func FindOne(id int) (*School, error) {
 func GetSchoolIdList() ([]int, error) {
 	var schoolIdList []int
 	if err := common.DB.Model(&School{}).Select("id").
-		Where("id = 140").
+		// Where("id = 140").
 		Find(&schoolIdList).Error; err != nil {
 		return nil, err
 	}
