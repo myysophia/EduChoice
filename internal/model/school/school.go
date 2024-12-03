@@ -52,7 +52,7 @@ func FindOne(id int) (*School, error) {
 func GetSchoolIdList() ([]int, error) {
 	var schoolIdList []int
 	if err := common.DB.Model(&School{}).Select("id").
-		// Where("id = 140").
+		Where("id = 140").
 		Find(&schoolIdList).Error; err != nil {
 		return nil, err
 	}

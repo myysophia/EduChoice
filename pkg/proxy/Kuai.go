@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"sync"
 	"time"
 
@@ -29,41 +30,9 @@ type Data struct {
 	ProxyList []string `json:"proxy_list"`
 }
 
-type ProxyScrapeResponse struct {
-	ShownRecords int     `json:"shown_records"`
-	TotalRecords int     `json:"total_records"`
-	Limit        int     `json:"limit"`
-	Skip         int     `json:"skip"`
-	NextPage     bool    `json:"nextpage"`
-	Proxies      []Proxy `json:"proxies"`
-}
-
-type Proxy struct {
-	Alive          bool    `json:"alive"`
-	AliveSince     float64 `json:"alive_since"`
-	Anonymity      string  `json:"anonymity"`
-	AverageTimeout float64 `json:"average_timeout"`
-	FirstSeen      float64 `json:"first_seen"`
-	IPData         IPData  `json:"ip_data"`
-	Port           int     `json:"port"`
-	Protocol       string  `json:"protocol"`
-	ProxyURL       string  `json:"proxy"`
-	SSL            bool    `json:"ssl"`
-	IP             string  `json:"ip"`
-}
-
-type IPData struct {
-	AS         string  `json:"as"`
-	ASName     string  `json:"asname"`
-	City       string  `json:"city"`
-	Country    string  `json:"country"`
-	ISP        string  `json:"isp"`
-	Lat        float64 `json:"lat"`
-	Lon        float64 `json:"lon"`
-	Mobile     bool    `json:"mobile"`
-	Org        string  `json:"org"`
-	Proxy      bool    `json:"proxy"`
-	RegionName string  `json:"regionName"`
+type ProxyItem struct {
+	IPAddress string `json:"ip_address"`
+	Port      int    `json:"port"`
 }
 
 func genProxyIP() (*GenProxyIPResponse, error) {
@@ -89,53 +58,79 @@ func genProxyIP() (*GenProxyIPResponse, error) {
 }
 
 func ChangeHttpProxyIP() {
-	client, err := NewHttpClientWithProxy()
-	if err != nil {
-		common.LOG.Error("创建代理客户端失败: " + err.Error())
+	if !common.CONFIG.Bool("proxy.switchon") {
 		return
 	}
 
-	resp, err := client.Get("http://d162.kdltpspro.com")
+	// 优先使用快代理
+	if common.CONFIG.Bool("proxy.kuaidaili") {
+		client, err := NewHttpClientWithProxy()
+		if err != nil {
+			common.LOG.Error("创建代理客户端失败: " + err.Error())
+			return
+		}
+
+		resp, err := client.Get("http://d162.kdltpspro.com")
+		if err != nil {
+			common.LOG.Error("代理连接测试失败: " + err.Error())
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusOK {
+			common.LOG.Info("快代理连接正常")
+		} else {
+			common.LOG.Error(fmt.Sprintf("快代理返回异常状态码: %d", resp.StatusCode))
+		}
+		return
+	}
+
+	// 使用公开代理
+	proxyList, err := GetPublicProxies()
 	if err != nil {
-		common.LOG.Error("代理连接测试失败: " + err.Error())
+		common.LOG.Error("获取公开代理失败: " + err.Error())
+		return
+	}
+
+	if len(proxyList) == 0 {
+		common.LOG.Error("没有可用的公开代理")
+		return
+	}
+
+	// 随机选择一个代理进行测试
+	proxyURL := proxyList[time.Now().UnixNano()%int64(len(proxyList))]
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+		Transport: &http.Transport{
+			Proxy: func(_ *http.Request) (*url.URL, error) {
+				return url.Parse(proxyURL)
+			},
+		},
+	}
+
+	resp, err := client.Get("http://www.baidu.com")
+	if err != nil {
+		common.LOG.Error("公开代理连接测试失败: " + err.Error())
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		common.LOG.Info("代理连接正常")
+		common.LOG.Info("公开代理连接正常")
 	} else {
-		common.LOG.Error(fmt.Sprintf("代理返回异常状态码: %d", resp.StatusCode))
+		common.LOG.Error(fmt.Sprintf("公开代理返回异常状态码: %d", resp.StatusCode))
 	}
 }
 
 func GetPublicProxies() ([]string, error) {
-	client := &http.Client{
-		Timeout: 10 * time.Second,
-	}
-
-	resp, err := client.Get("https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=json")
+	// 直接从本地文件获取代理列表
+	proxyList, err := GetLocalProxies()
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch proxies: %v", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %v", err)
+		return nil, fmt.Errorf("failed to get local proxies: %v", err)
 	}
 
-	var proxyResp ProxyScrapeResponse
-	if err := json.Unmarshal(body, &proxyResp); err != nil {
-		return nil, fmt.Errorf("failed to parse response: %v", err)
-	}
-
-	// 只返回活跃的HTTP/HTTPS代理
-	var proxyList []string
-	for _, proxy := range proxyResp.Proxies {
-		if proxy.Alive && (proxy.Protocol == "http" || proxy.Protocol == "https") {
-			proxyList = append(proxyList, fmt.Sprintf("%s://%s:%d", proxy.Protocol, proxy.IP, proxy.Port))
-		}
+	if len(proxyList) == 0 {
+		return nil, fmt.Errorf("no available proxies in local file")
 	}
 
 	return proxyList, nil
@@ -168,9 +163,9 @@ func NewHttpClientWithProxy() (*http.Client, error) {
 	}
 
 	// 使用公开代理
-	proxyList, err := GetPublicProxies()
+	proxyList, err := GetLocalProxies()
 	if err != nil {
-		common.LOG.Error("Failed to get public proxies: " + err.Error())
+		common.LOG.Error("Failed to get local proxies: " + err.Error())
 		return &http.Client{}, nil
 	}
 
@@ -197,4 +192,26 @@ func NewHttpClientWithProxy() (*http.Client, error) {
 			DisableCompression: true,
 		},
 	}, nil
+}
+
+// 从本地文件读取代理列表
+func GetLocalProxies() ([]string, error) {
+	// 读取配置文件
+	data, err := os.ReadFile("config/proxy.json")
+	if err != nil {
+		return nil, fmt.Errorf("failed to read proxy.json: %v", err)
+	}
+
+	var proxyItems []ProxyItem
+	if err := json.Unmarshal(data, &proxyItems); err != nil {
+		return nil, fmt.Errorf("failed to parse proxy.json: %v", err)
+	}
+
+	var proxyList []string
+	for _, proxy := range proxyItems {
+		// 默认使用 http 协议
+		proxyList = append(proxyList, fmt.Sprintf("http://%s:%d", proxy.IPAddress, proxy.Port))
+	}
+
+	return proxyList, nil
 }

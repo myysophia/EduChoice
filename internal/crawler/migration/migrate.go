@@ -2,6 +2,11 @@ package migration
 
 import (
 	"fmt"
+	"runtime/debug"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/big-dust/DreamBridge/internal/crawler/must"
 	"github.com/big-dust/DreamBridge/internal/crawler/response"
 	"github.com/big-dust/DreamBridge/internal/crawler/safe"
@@ -13,10 +18,6 @@ import (
 	"github.com/big-dust/DreamBridge/internal/pkg/algo"
 	"github.com/big-dust/DreamBridge/internal/pkg/common"
 	"github.com/big-dust/DreamBridge/pkg/proxy"
-	"runtime/debug"
-	"strconv"
-	"sync"
-	"time"
 )
 
 var (
@@ -32,7 +33,8 @@ func Migrate() {
 	//MigrateSpecialScores()
 	//MigratePlanNum()
 
-	MigrateSpecialScoresHis()
+	//MigrateSpecialScoresHis()
+	MigratePlanHis()
 }
 
 func MigrateSchoolScores() {
