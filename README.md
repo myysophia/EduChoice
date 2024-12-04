@@ -228,3 +228,91 @@ this:
 2. 容错性：错误恢复和超时处理
 3. 性能优化：并发请求和超时控制
 4. 反爬处理：代理自动切换
+
+### 3. defer 使用注意事项
+
+1. defer 的基本作用
+   - 将函数调用推迟到当前函数返回之前执行
+   - 常用于资源清理、解锁等操作
+   - defer 语句会按照后进先出（LIFO）的顺序执行
+
+2. 在循环中使用 defer 的问题
+```go
+go
+// 错误示例
+func badExample() {
+for {
+ticker := time.NewTicker(1 time.Second)
+defer ticker.Stop() // 这个 defer 要等函数返回才会执行，而不是在每次循环结束时执行
+// ...
+}
+}
+// 正确示例
+func goodExample() {
+for {
+ticker := time.NewTicker(1 time.Second)
+select {
+case <-ticker.C:
+ticker.Stop() // 立即停止不再需要的 ticker
+// 处理逻辑
+}
+}
+}
+
+3. 主要注意点：
+   - defer 语句只在函数返回时执行，而不是在代码块或循环结束时
+   - 在循环中使用 defer 可能导致资源泄漏
+   - 对于需要及时清理的资源，应该在不再需要时立即进行清理，而不是依赖 defer
+
+4. 最佳实践：
+   - 在函数级别使用 defer 处理资源清理
+   - 在循环中需要立即手动清理资源
+   - 特别注意定时器、文件句柄等系统资源的及时释放
+
+### 4. 数据库事务处理最佳实践
+
+在处理数据库事务时，需要确保事务的完整性和一致性。以下是一个典型的事务处理示例：
+
+```go
+func CreateRecords(records []*Record) error {
+    tx := db.Begin()
+    // 使用 defer 确保事务一定会被处理
+    committed := false
+    defer func() {
+        if !committed {
+            tx.Rollback()
+        }
+    }()
+
+    for _, record := range records {
+        if err := tx.Create(record).Error; err != nil {
+            return err
+        }
+    }
+
+    if err := tx.Commit().Error; err != nil {
+        return fmt.Errorf("提交事务失败: %v", err)
+    }
+    committed = true
+    return nil
+}
+```
+
+主要注意点：
+1. 事务状态跟踪
+   - 使用 committed 标志记录事务状态
+   - defer 配合标志确保事务正确处理
+
+2. 错误处理
+   - 创建失败时及时返回错误
+   - 提交失败时提供详细错误信息
+
+3. 资源清理
+   - 使用 defer 确保事务一定会被处理
+   - 避免事务悬而未决
+
+4. 最佳实践
+   - 在函数开始时初始化事务
+   - 使用 defer 处理回滚
+   - 仅在所有操作都成功后提交
+   - 检查提交操作的返回值

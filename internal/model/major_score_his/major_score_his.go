@@ -38,9 +38,16 @@ type MajorScoreHis struct {
 // CreateMajorScoresHis 创建历史分数记录
 func CreateMajorScoresHis(records []*MajorScoreHis) error {
 	tx := common.DB.Begin()
+	// 使用 defer 确保事务一定会被处理
+	committed := false
+	defer func() {
+		if !committed {
+			tx.Rollback()
+		}
+	}()
+
 	for _, record := range records {
 		if err := tx.Create(record).Error; err != nil {
-			tx.Rollback()
 			if common.ErrMysqlDuplicate.Is(err) {
 				return nil
 			}
@@ -48,7 +55,11 @@ func CreateMajorScoresHis(records []*MajorScoreHis) error {
 			return err
 		}
 	}
-	tx.Commit()
+
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("提交事务失败: %v", err)
+	}
+	committed = true
 	return nil
 }
 

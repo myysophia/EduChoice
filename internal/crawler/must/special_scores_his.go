@@ -7,12 +7,17 @@ import (
 	"net/http"
 	"strconv"
 
-	//"github.com/big-dust/DreamBridge/internal/crawler/common"
 	"github.com/big-dust/DreamBridge/internal/crawler/response"
-	"github.com/big-dust/DreamBridge/internal/pkg/common"
+	"github.com/big-dust/DreamBridge/pkg/proxy"
 )
 
 func GetSpecialScoresHis(schoolId, year, typeId, batchId, page int) (*response.SpecialScoresHisResponse, error) {
+	// 创建代理客户端
+	client, err := proxy.NewHttpClientWithProxy()
+	if err != nil {
+		return nil, fmt.Errorf("创建代理客户端失败: %v", err)
+	}
+
 	url := fmt.Sprintf("https://api.zjzw.cn/web/api/?local_batch_id=%d&local_province_id=61&local_type_id=%d&page=%d&school_id=%d&size=10&sp_xuanke=&special_group=&uri=apidata/api/gk/score/special&year=%d",
 		batchId, typeId, page, schoolId, year)
 
@@ -24,7 +29,6 @@ func GetSpecialScoresHis(schoolId, year, typeId, batchId, page int) (*response.S
 		"user-agent":   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
 	}
 
-	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("创建请求失败: %v", err)
@@ -80,7 +84,7 @@ func GetSpecialScoresHis(schoolId, year, typeId, batchId, page int) (*response.S
 	}
 
 	// 打印原始响应内容以便调试
-	common.LOG.Info(fmt.Sprintf("Raw Response: %+v", string(bodyText)))
+	//common.LOG.Info(fmt.Sprintf("Raw Response: %+v", string(bodyText)))
 
 	for _, item := range items {
 		itemMap, ok := item.(map[string]interface{})

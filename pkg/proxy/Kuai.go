@@ -70,7 +70,8 @@ func ChangeHttpProxyIP() {
 			return
 		}
 
-		resp, err := client.Get("as.n213.kdlfps.com")
+		// 使用一个可靠的测试URL，比如百度
+		resp, err := client.Get("http://www.baidu.com")
 		if err != nil {
 			common.LOG.Error("代理连接测试失败: " + err.Error())
 			return
