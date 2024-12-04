@@ -25,3 +25,5 @@ go.work
 *.toml
 # 日志
 *.log
+
+.vscode/

@@ -2,13 +2,22 @@ package config
 
 import (
 	"flag"
-	"github.com/gookit/config/v2/toml"
+	"path/filepath"
+	"runtime"
 	"sync"
+
+	"github.com/gookit/config/v2/toml"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/gookit/config/v2"
 	"github.com/gookit/goutil/cliutil"
 )
+
+// 获取项目根目录
+func getRootPath() string {
+	_, b, _, _ := runtime.Caller(0)
+	return filepath.Join(filepath.Dir(b), "../..")
+}
 
 // 添加配置文件
 func New(path ...string) *config.Config {
@@ -20,7 +29,7 @@ func New(path ...string) *config.Config {
 		flag.Parse()
 		if filePath == "" {
 			// 没有的话使用默认
-			filePath = "config.toml"
+			filePath = filepath.Join(getRootPath(), "config", "config.toml")
 		}
 	} else {
 		filePath = path[0]

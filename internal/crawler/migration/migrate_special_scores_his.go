@@ -1,9 +1,9 @@
 package migration
 
 import (
-	"encoding/json"
 	"fmt"
 	"runtime/debug"
+	"strconv"
 	"strings"
 	"time"
 
@@ -61,43 +61,27 @@ func MigrateSpecialScoresHisOneSafe(schoolId int) {
 
 					for _, item := range scores.Data.Item {
 						score := &major_score_his.MajorScoreHis{
-							ID:                processID(item.ID),
+							ID:                item.ID,
 							SchoolID:          item.SchoolID,
 							SpecialID:         item.SpecialID,
 							SpeID:             item.SpeID,
 							Year:              item.Year,
 							SpName:            item.SpName,
-							SpInfo:            item.SpInfo,
+							Spname:            item.Spname,
 							Info:              item.Info,
 							LocalProvinceName: item.LocalProvinceName,
 							LocalTypeName:     item.LocalTypeName,
 							LocalBatchName:    item.LocalBatchName,
-							Level2Name:        item.Level2Name,
-							Level3Name:        item.Level3Name,
-							Average:           item.Average,
-							Max:               item.Max,
-							Min:               item.Min,
+							Average:           parseIntWithDefault(item.Average),
+							Max:               parseIntWithDefault(item.Max),
+							Min:               parseIntWithDefault(item.Min),
 							MinSection:        item.MinSection,
 							Proscore:          item.Proscore,
-							DoubleHigh:        item.Doublehigh,
 							IsTop:             item.IsTop,
 							IsScoreRange:      item.IsScoreRange,
 							MinRange:          item.MinRange,
 							MinRankRange:      item.MinRankRange,
 							Remark:            item.Remark,
-							ZslxName:          item.ZslxName,
-							DualClassName:     item.DualClassName,
-							FirstKm:           item.FirstKm,
-							SgFxk:             item.SgFxk,
-							SgSxk:             item.SgSxk,
-							SgInfo:            item.SgInfo,
-							SgName:            item.SgName,
-							SgType:            item.SgType,
-							SpFxk:             item.SpFxk,
-							SpSxk:             item.SpSxk,
-							SpType:            item.SpType,
-							Single:            item.Single,
-							SpecialGroup:      item.SpecialGroup,
 						}
 						allScores = append(allScores, score)
 					}
@@ -116,15 +100,12 @@ func MigrateSpecialScoresHisOneSafe(schoolId int) {
 }
 
 // 添加辅助函数
-func mustAtoi(n json.Number) int {
-	if n == "" || n == "-" {
-		return 0
-	}
-	i, err := n.Int64()
+func parseIntWithDefault(s string) int {
+	val, err := strconv.Atoi(s)
 	if err != nil {
 		return 0
 	}
-	return int(i)
+	return val
 }
 
 // 添加新的辅助函数来处理ID

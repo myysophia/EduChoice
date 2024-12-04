@@ -9,6 +9,7 @@ import (
 
 	//"github.com/big-dust/DreamBridge/internal/crawler/common"
 	"github.com/big-dust/DreamBridge/internal/crawler/response"
+	"github.com/big-dust/DreamBridge/internal/pkg/common"
 )
 
 func GetSpecialScoresHis(schoolId, year, typeId, batchId, page int) (*response.SpecialScoresHisResponse, error) {
@@ -50,6 +51,18 @@ func GetSpecialScoresHis(schoolId, year, typeId, batchId, page int) (*response.S
 		return nil, fmt.Errorf("JSON解析失败: %v", err)
 	}
 
+	// 先检查是否被反爬
+	if code, ok := rawResponse["code"].(string); ok && code == "1069" {
+		return nil, fmt.Errorf("访问频率限制: %s", rawResponse["message"])
+	}
+
+	// 检查data字段
+	dataMap, ok := rawResponse["data"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("data字段类型不匹配: 期望 map[string]interface{}, 实际类型 %T, 值: %+v",
+			rawResponse["data"], rawResponse["data"])
+	}
+
 	// 手动构造最终响应对象
 	finalResponse := &response.SpecialScoresHisResponse{
 		Code:      fmt.Sprint(rawResponse["code"]),
@@ -58,31 +71,35 @@ func GetSpecialScoresHis(schoolId, year, typeId, batchId, page int) (*response.S
 		Encrydata: fmt.Sprint(rawResponse["encrydata"]),
 	}
 
-	// 解析 data 字段
-	dataMap, ok := rawResponse["data"].(map[string]interface{})
-	if !ok {
-		return nil, fmt.Errorf("data字段类型不匹配")
-	}
-
 	// 解析 item 数组
 	items, ok := dataMap["item"].([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("item字段类型不匹配")
+		// 打印实际类型信息
+		return nil, fmt.Errorf("item字段类型不匹配: 期望 []interface{}, 实际类型 %T, 值: %+v",
+			dataMap["item"], dataMap["item"])
 	}
 
+	// 打印原始响应内容以便调试
+	common.LOG.Info(fmt.Sprintf("Raw Response: %+v", string(bodyText)))
+
 	for _, item := range items {
-		itemMap := item.(map[string]interface{})
+		itemMap, ok := item.(map[string]interface{})
+		if !ok {
+			// 打印实际类型信息
+			return nil, fmt.Errorf("item元素类型不匹配: 期望 map[string]interface{}, 实际类型 %T, 值: %+v",
+				item, item)
+		}
 		specialItem := response.SpecialScoresHisItem{
-			Average:           fmt.Sprint(itemMap["average"]),
-			Doublehigh:        safeToInt(itemMap["doublehigh"]),
-			DualClassName:     fmt.Sprint(itemMap["dual_class_name"]),
-			FirstKm:           safeToInt(itemMap["first_km"]),
-			ID:                fmt.Sprint(itemMap["id"]),
-			Info:              fmt.Sprint(itemMap["info"]),
-			IsScoreRange:      safeToInt(itemMap["is_score_range"]),
-			IsTop:             safeToInt(itemMap["is_top"]),
-			Level2Name:        fmt.Sprint(itemMap["level2_name"]),
-			Level3Name:        fmt.Sprint(itemMap["level3_name"]),
+			Average: fmt.Sprint(itemMap["average"]),
+			// Doublehigh:        safeToInt(itemMap["doublehigh"]),
+			// DualClassName:     fmt.Sprint(itemMap["dual_class_name"]),
+			// FirstKm:           safeToInt(itemMap["first_km"]),
+			ID:           fmt.Sprint(itemMap["id"]),
+			Info:         fmt.Sprint(itemMap["info"]),
+			IsScoreRange: safeToInt(itemMap["is_score_range"]),
+			IsTop:        safeToInt(itemMap["is_top"]),
+			// Level2Name:        fmt.Sprint(itemMap["level2_name"]),
+			// Level3Name:        fmt.Sprint(itemMap["level3_name"]),
 			LocalBatchName:    fmt.Sprint(itemMap["local_batch_name"]),
 			LocalProvinceName: fmt.Sprint(itemMap["local_province_name"]),
 			LocalTypeName:     fmt.Sprint(itemMap["local_type_name"]),
@@ -90,28 +107,28 @@ func GetSpecialScoresHis(schoolId, year, typeId, batchId, page int) (*response.S
 			Min:               fmt.Sprint(itemMap["min"]),
 			MinRange:          fmt.Sprint(itemMap["min_range"]),
 			MinRankRange:      fmt.Sprint(itemMap["min_rank_range"]),
-			MinSection:        safeToInt(itemMap["min_section"]),
-			Name:              fmt.Sprint(itemMap["name"]),
-			Proscore:          safeToInt(itemMap["proscore"]),
-			Remark:            fmt.Sprint(itemMap["remark"]),
-			SchoolID:          safeToInt(itemMap["school_id"]),
-			SgFxk:             fmt.Sprint(itemMap["sg_fxk"]),
-			SgInfo:            fmt.Sprint(itemMap["sg_info"]),
-			SgName:            fmt.Sprint(itemMap["sg_name"]),
-			SgSxk:             fmt.Sprint(itemMap["sg_sxk"]),
-			SgType:            safeToInt(itemMap["sg_type"]),
-			Single:            fmt.Sprint(itemMap["single"]),
-			SpFxk:             fmt.Sprint(itemMap["sp_fxk"]),
-			SpInfo:            fmt.Sprint(itemMap["sp_info"]),
-			SpName:            fmt.Sprint(itemMap["sp_name"]),
-			SpSxk:             fmt.Sprint(itemMap["sp_sxk"]),
-			SpType:            safeToInt(itemMap["sp_type"]),
-			SpeID:             safeToInt(itemMap["spe_id"]),
-			SpecialGroup:      safeToInt(itemMap["special_group"]),
-			SpecialID:         safeToInt(itemMap["special_id"]),
-			Spname:            fmt.Sprint(itemMap["spname"]),
-			Year:              safeToInt(itemMap["year"]),
-			ZslxName:          fmt.Sprint(itemMap["zslx_name"]),
+			MinSection:        fmt.Sprint(itemMap["min_section"]),
+			// Name:              fmt.Sprint(itemMap["name"]),
+			Proscore: safeToInt(itemMap["proscore"]),
+			Remark:   fmt.Sprint(itemMap["remark"]),
+			SchoolID: safeToInt(itemMap["school_id"]),
+			// SgFxk:             fmt.Sprint(itemMap["sg_fxk"]),
+			// SgInfo:            fmt.Sprint(itemMap["sg_info"]),
+			// SgName:            fmt.Sprint(itemMap["sg_name"]),
+			// SgSxk:             fmt.Sprint(itemMap["sg_sxk"]),
+			// SgType:            safeToInt(itemMap["sg_type"]),
+			// Single:            fmt.Sprint(itemMap["single"]),
+			// SpFxk:             fmt.Sprint(itemMap["sp_fxk"]),
+			// SpInfo:            fmt.Sprint(itemMap["sp_info"]),
+			SpName: fmt.Sprint(itemMap["sp_name"]),
+			// SpSxk:             fmt.Sprint(itemMap["sp_sxk"]),
+			SpType: safeToInt(itemMap["sp_type"]),
+			SpeID:  safeToInt(itemMap["spe_id"]),
+			// SpecialGroup:      safeToInt(itemMap["special_group"]),
+			SpecialID: safeToInt(itemMap["special_id"]),
+			Spname:    fmt.Sprint(itemMap["spname"]),
+			Year:      safeToInt(itemMap["year"]),
+			// ZslxName:          fmt.Sprint(itemMap["zslx_name"]),
 		}
 		finalResponse.Data.Item = append(finalResponse.Data.Item, specialItem)
 	}

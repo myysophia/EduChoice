@@ -16,37 +16,21 @@ type MajorScoreHis struct {
 	SpeID             int    `json:"spe_id"`
 	Year              int    `json:"year"`
 	SpName            string `json:"sp_name"`
-	SpInfo            string `json:"sp_info"`
+	Spname            string `json:"spname"`
 	Info              string `json:"info"`
 	LocalProvinceName string `json:"local_province_name"`
 	LocalTypeName     string `json:"local_type_name"`
 	LocalBatchName    string `json:"local_batch_name"`
-	Level2Name        string `json:"level2_name"`
-	Level3Name        string `json:"level3_name"`
-	Average           string `json:"average"`
-	Max               string `json:"max"`
-	Min               string `json:"min"`
-	MinSection        int    `json:"min_section"`
+	Average           int    `json:"average"`
+	Max               int    `json:"max"`
+	Min               int    `json:"min"`
+	MinSection        string `json:"min_section"`
 	Proscore          int    `json:"proscore"`
-	DoubleHigh        int    `json:"doublehigh"`
 	IsTop             int    `json:"is_top"`
 	IsScoreRange      int    `json:"is_score_range"`
 	MinRange          string `json:"min_range"`
 	MinRankRange      string `json:"min_rank_range"`
 	Remark            string `json:"remark"`
-	ZslxName          string `json:"zslx_name"`
-	DualClassName     string `json:"dual_class_name"`
-	FirstKm           int    `json:"first_km"`
-	SgFxk             string `json:"sg_fxk"`
-	SgSxk             string `json:"sg_sxk"`
-	SgInfo            string `json:"sg_info"`
-	SgName            string `json:"sg_name"`
-	SgType            int    `json:"sg_type"`
-	SpFxk             string `json:"sp_fxk"`
-	SpSxk             string `json:"sp_sxk"`
-	SpType            int    `json:"sp_type"`
-	Single            string `json:"single"`
-	SpecialGroup      int    `json:"special_group"`
 }
 
 // CreateMajorScoresHis 创建历史分数记录

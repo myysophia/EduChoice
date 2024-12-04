@@ -2,10 +2,11 @@ package safe
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/big-dust/DreamBridge/internal/crawler/must"
 	"github.com/big-dust/DreamBridge/internal/crawler/response"
 	"github.com/big-dust/DreamBridge/internal/pkg/common"
-	"time"
 )
 
 func MustGetSpecialScoresHis(schoolId, year, typeId, batchId, page int) *response.SpecialScoresHisResponse {
@@ -14,10 +15,14 @@ func MustGetSpecialScoresHis(schoolId, year, typeId, batchId, page int) *respons
 		tryCount++
 		errChan := make(chan error, 1)
 		resChan := make(chan *response.SpecialScoresHisResponse, 1)
-		
+
 		go func() {
 			res, err := must.GetSpecialScoresHis(schoolId, year, typeId, batchId, page)
 			if err != nil {
+				common.LOG.Error(fmt.Sprintf(
+					"GetSpecialScoresHis failed - SchoolId: %d, Year: %d, TypeId: %d, BatchId: %d, Page: %d, Error: %v",
+					schoolId, year, typeId, batchId, page, err,
+				))
 				errChan <- err
 				return
 			}
@@ -25,18 +30,20 @@ func MustGetSpecialScoresHis(schoolId, year, typeId, batchId, page int) *respons
 		}()
 
 		ticker := time.NewTicker(15 * time.Second)
+
 		select {
 		case res := <-resChan:
 			return res
+		case err := <-errChan:
+			common.LOG.Error(fmt.Sprintf(
+				"MustGetSpecialScoresHis: Time Out 15s TryCount:%d SchoolId:%d Year:%d TypeId:%d BatchId:%d Page:%d Error:%s",
+				tryCount, schoolId, year, typeId, batchId, page, err.Error(),
+			))
 		case <-ticker.C:
-			select {
-			case err := <-errChan:
-				common.LOG.Error(fmt.Sprintf("MustGetSpecialScoresHis: Time Out 15s TryCount:%d SchoolId:%d Error:%s", 
-					tryCount, schoolId, err.Error()))
-			default:
-				common.LOG.Error(fmt.Sprintf("MustGetSpecialScoresHis: Time Out 15s TryCount:%d SchoolId:%d", 
-					tryCount, schoolId))
-			}
+			common.LOG.Error(fmt.Sprintf(
+				"MustGetSpecialScoresHis: Time Out 15s TryCount:%d SchoolId:%d Year:%d TypeId:%d BatchId:%d Page:%d",
+				tryCount, schoolId, year, typeId, batchId, page,
+			))
 		}
 	}
 }
