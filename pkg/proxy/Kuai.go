@@ -14,9 +14,9 @@ import (
 )
 
 var (
-	PROXY_HOST     = "d162.kdltpspro.com:15818"
-	PROXY_USERNAME = "t13284784715160"
-	PROXY_PASSWORD = "zye1svvx"
+	PROXY_HOST     = "as.n213.kdlfps.com:18866"
+	PROXY_USERNAME = "f2693221377"
+	PROXY_PASSWORD = "jx23httz"
 	mu             sync.RWMutex
 )
 
@@ -70,7 +70,7 @@ func ChangeHttpProxyIP() {
 			return
 		}
 
-		resp, err := client.Get("http://d162.kdltpspro.com")
+		resp, err := client.Get("as.n213.kdlfps.com")
 		if err != nil {
 			common.LOG.Error("代理连接测试失败: " + err.Error())
 			return
@@ -151,6 +151,9 @@ func NewHttpClientWithProxy() (*http.Client, error) {
 			return &http.Client{}, nil
 		}
 
+		// 记录使用的代理IP
+		common.LOG.Info(fmt.Sprintf("Using KuaiDaiLi Proxy: %s", PROXY_HOST))
+
 		return &http.Client{
 			Timeout: 15 * time.Second,
 			Transport: &http.Transport{
@@ -176,6 +179,10 @@ func NewHttpClientWithProxy() (*http.Client, error) {
 
 	// 随机选择一个代理
 	proxyURL := proxyList[time.Now().UnixNano()%int64(len(proxyList))]
+
+	// 记录使用的代理IP
+	common.LOG.Info(fmt.Sprintf("Using Public Proxy: %s", proxyURL))
+
 	urli := url.URL{}
 	urlproxy, err := urli.Parse(proxyURL)
 	if err != nil {

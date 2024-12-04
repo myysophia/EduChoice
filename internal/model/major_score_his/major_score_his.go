@@ -21,6 +21,8 @@ type MajorScoreHis struct {
 	LocalProvinceName string `json:"local_province_name"`
 	LocalTypeName     string `json:"local_type_name"`
 	LocalBatchName    string `json:"local_batch_name"`
+	Level2Name        string `json:"level2_name"`
+	Level3Name        string `json:"level3_name"`
 	Average           int    `json:"average"`
 	Max               int    `json:"max"`
 	Min               int    `json:"min"`

@@ -20,6 +20,8 @@ type SpecialScoresHisItem struct {
 	Info              string `json:"info"`
 	IsScoreRange      int    `json:"is_score_range"`
 	IsTop             int    `json:"is_top"`
+	Level2Name        string `json:"level2_name"`
+	Level3Name        string `json:"level3_name"`
 	LocalBatchName    string `json:"local_batch_name"`
 	LocalProvinceName string `json:"local_province_name"`
 	LocalTypeName     string `json:"local_type_name"`

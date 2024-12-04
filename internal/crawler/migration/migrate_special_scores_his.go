@@ -11,6 +11,7 @@ import (
 	"github.com/big-dust/DreamBridge/internal/model/major_score_his"
 	"github.com/big-dust/DreamBridge/internal/model/school"
 	"github.com/big-dust/DreamBridge/internal/pkg/common"
+	"github.com/big-dust/DreamBridge/pkg/proxy"
 )
 
 func MigrateSpecialScoresHis() {
@@ -23,7 +24,9 @@ func MigrateSpecialScoresHis() {
 	for _, schoolId := range list {
 		wgSpecial.Add(1)
 		MigrateSpecialScoresHisOneSafe(schoolId)
-		time.Sleep(500 * time.Millisecond)
+		// 每个学校处理完后切换代理并等待，避免被反爬
+		proxy.ChangeHttpProxyIP()
+		time.Sleep(3000 * time.Millisecond)
 	}
 	wgSpecial.Wait()
 }
@@ -55,10 +58,6 @@ func MigrateSpecialScoresHisOneSafe(schoolId int) {
 				page := 1
 				for {
 					scores := safe.MustGetSpecialScoresHis(schoolId, year, typeId, batchId, page)
-					if len(scores.Data.Item) == 0 {
-						break
-					}
-
 					for _, item := range scores.Data.Item {
 						score := &major_score_his.MajorScoreHis{
 							ID:                item.ID,
@@ -72,6 +71,8 @@ func MigrateSpecialScoresHisOneSafe(schoolId int) {
 							LocalProvinceName: item.LocalProvinceName,
 							LocalTypeName:     item.LocalTypeName,
 							LocalBatchName:    item.LocalBatchName,
+							Level2Name:        item.Level2Name,
+							Level3Name:        item.Level3Name,
 							Average:           parseIntWithDefault(item.Average),
 							Max:               parseIntWithDefault(item.Max),
 							Min:               parseIntWithDefault(item.Min),
@@ -91,6 +92,9 @@ func MigrateSpecialScoresHisOneSafe(schoolId int) {
 						break
 					}
 					page++
+					// 每页数据处理完后切换代理并等待
+					proxy.ChangeHttpProxyIP()
+					time.Sleep(500 * time.Millisecond)
 				}
 			}
 		}

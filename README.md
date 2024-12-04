@@ -99,3 +99,132 @@ major_score_his映射整个json过程中json.Unmarshal 无法正确解析。这�
 - 错误提示应准确反映问题本质
 - 区分反爬限制和数据格式错误
 - 提供有效的错误诊断信息
+
+## Go语言知识点
+
+### 1. 类型断言与错误处理
+在 `must/special_scores_his.go` 中的错误处理提供了很好的学习案例：
+```go
+// 先检查是否被反爬
+if code, ok := rawResponse["code"].(string); ok && code == "1069" {
+return nil, fmt.Errorf("访问频率限制: %s", rawResponse["message"])
+}
+// 检查data字段
+dataMap, ok := rawResponse["data"].(map[string]interface{})
+if !ok {
+return nil, fmt.Errorf("data字段类型不匹配: 期望 map[string]interface{}, 实际类型 %T, 值: %+v",
+rawResponse["data"], rawResponse["data"])
+}
+```
+
+知识要点：
+1. 类型断言基础
+   - 语法：`value, ok := x.(T)`
+   - ok 表示断言是否成功
+   - 失败时 value 为类型零值
+
+2. 错误处理最佳实践
+   - 错误信息应该包含上下文
+   - 使用 fmt.Errorf 格式化错误
+   - 按优先级检查错误（如先检查反爬）
+
+3. 接口类型处理
+   - interface{} 可以接收任何类型
+   - 使用类型断言获取具体类型
+   - 处理 map[string]interface{} 常用模式
+
+4. 调试技巧
+   - 使用 %T 打印类型信息
+   - 使用 %+v 打印详细值
+   - 分层次处理复杂数据结构
+
+这种错误处理方式特别适合处理：
+- API 响应解析
+- JSON 数据处理
+- 类型安全转换
+- 分级错误处理
+
+### 2. 并发安全与超时控制
+在 `safe/school.go` 中的 GetSchoolInfoSafe 函数提供了并发编程的典型案例。这个函数的主要作用是安全地获取学校信息，它通过以下机制来保证可靠性：
+- 并发请求：同时发起两个相同的请求，提高成功率
+- 超时控制：设置5秒超时，避免请求阻塞
+- 错误恢复：自动处理panic，确保程序稳定性
+- 自动重试：失败后自动重新尝试
+
+代码实现：
+```go
+func GetSchoolInfoSafe(schoolId int) *response.SchoolInfoResponse {
+    var info *response.SchoolInfoResponse
+this:
+    for {
+        infoChan := make(chan *response.SchoolInfoResponse, 1)
+        for i := 0; i < 2; i++ {
+            go func() {
+                defer func() {
+                    if r := recover(); r != nil {
+                        common.LOG.Error(fmt.Sprintf("%v", r))
+                    }
+                }()
+                info, err := scraper.SchoolInfo(schoolId)
+                if err != nil || info == nil {
+                    return
+                }
+                infoChan <- info
+            }()
+        }
+        ticker := time.NewTicker(5 * time.Second)
+        select {
+        case info = <-infoChan:
+            break this
+        case <-ticker.C:
+            common.LOG.Error("get school info: time out 5 s")
+            proxy.ChangeHttpProxyIP()
+        }
+    }
+    return info
+}
+```
+
+知识要点分析：
+
+1. goroutine 并发设计
+   - 项目使用场景：同时发起两个相同请求，谁先成功用谁的结果
+   - 实现方式：使用 for 循环启动两个 goroutine
+   - 优势：提高请求成功率，减少等待时间
+   - 注意事项：需要考虑 goroutine 泄漏问题
+
+2. channel 通信机制
+   - 项目使用场景：goroutine 之间传递学校信息数据
+   - 实现方式：使用带缓冲的 channel（容量为1）
+   - 优势：避免 goroutine 阻塞，确保数据安全传递
+   - 实际应用：infoChan := make(chan *response.SchoolInfoResponse, 1)
+
+3. select 多路复用
+   - 项目使用场景：同时处理数据接收和超时检测
+   - 实现方式：使用 select 监听多个 channel
+   - 优势：优雅地处理超时情况，避免请求卡死
+   - 实际应用：在接收数据和定时器之间进行选择
+
+4. defer 错误恢复
+   - 项目使用场景：防止爬虫请求panic导致程序崩溃
+   - 实现方式：在每个 goroutine 中使用 defer recover
+   - 优势：保证程序稳定性，不会因单个请求失败而中断
+   - 实际应用：捕获并记录错误，允许程序继续运行
+
+5. 代理自动切换
+   - 项目使用场景：请求超时时自动更换代理IP
+   - 实现方式：在超时分支中调用 proxy.ChangeHttpProxyIP()
+   - 优势：提高请求成功率，绕过反爬限制
+   - 实际应用：配合定时器实现自动切换
+
+这种并发设计模式在项目中的其他场景也有应用：
+- 专业分数线数据采集
+- 招生计划信息获取
+- 学校列表更新
+- 任何需要可靠性和容错性的网络请求
+
+通过这种设计，我们实现了：
+1. 高可用性：多次尝试和自动重试
+2. 容错性：错误恢复和超时处理
+3. 性能优化：并发请求和超时控制
+4. 反爬处理：代理自动切换
