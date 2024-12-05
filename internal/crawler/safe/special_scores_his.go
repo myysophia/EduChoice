@@ -12,31 +12,37 @@ import (
 
 func MustGetSpecialScoresHis(schoolId, year, typeId, batchId, page int) *response.SpecialScoresHisResponse {
 	tryCount := 0
+	var res *response.SpecialScoresHisResponse
+this:
 	for {
 		tryCount++
 		errChan := make(chan error, 1)
 		resChan := make(chan *response.SpecialScoresHisResponse, 1)
-
-		go func() {
-			// proxy.ChangeHttpProxyIP()
-			res, err := must.GetSpecialScoresHis(schoolId, year, typeId, batchId, page)
-			if err != nil {
-				common.LOG.Error(fmt.Sprintf(
-					"GetSpecialScoresHis failed - SchoolId: %d, Year: %d, TypeId: %d, BatchId: %d, Page: %d, Error: %v",
-					schoolId, year, typeId, batchId, page, err,
-				))
-				errChan <- err
-				return
-			}
-			resChan <- res
-		}()
+		for i := 1; i < 2; i++ {
+			go func() {
+				defer func() {
+					if r := recover(); r != nil {
+						common.LOG.Error(fmt.Sprintf("%v", r))
+					}
+				}()
+				res, err := must.GetSpecialScoresHis(schoolId, year, typeId, batchId, page)
+				if err != nil {
+					common.LOG.Error(fmt.Sprintf(
+						"GetSpecialScoresHis failed - SchoolId: %d, Year: %d, TypeId: %d, BatchId: %d, Page: %d, Error: %v",
+						schoolId, year, typeId, batchId, page, err,
+					))
+					errChan <- err
+					return
+				}
+				resChan <- res
+			}()
+		}
 
 		ticker := time.NewTicker(5 * time.Second)
-		defer ticker.Stop()
 
 		select {
-		case res := <-resChan:
-			return res
+		case res = <-resChan:
+			break this
 		case err := <-errChan:
 			common.LOG.Error(fmt.Sprintf(
 				"MustGetSpecialScoresHis: TryCount:%d SchoolId:%d Year:%d TypeId:%d BatchId:%d Page:%d Error:%s",
@@ -51,9 +57,9 @@ func MustGetSpecialScoresHis(schoolId, year, typeId, batchId, page int) *respons
 			}
 
 		case <-ticker.C:
-			// 只在超时时切换代理
+			common.LOG.Error("get score his time out 5s")
 			proxy.ChangeHttpProxyIP()
-			time.Sleep(2 * time.Second)
 		}
 	}
+	return res
 }

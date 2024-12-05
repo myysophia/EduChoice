@@ -79,7 +79,7 @@ func ChangeHttpProxyIP() {
 		defer resp.Body.Close()
 
 		if resp.StatusCode == http.StatusOK {
-			common.LOG.Info("快代理连接正常")
+			// common.LOG.Info("快代理连接正常")
 		} else {
 			common.LOG.Error(fmt.Sprintf("快代理返回异常状态码: %d", resp.StatusCode))
 		}
@@ -153,7 +153,7 @@ func NewHttpClientWithProxy() (*http.Client, error) {
 		}
 
 		// 记录使用的代理IP
-		common.LOG.Info(fmt.Sprintf("Using KuaiDaiLi Proxy: %s", PROXY_HOST))
+		// common.LOG.Info(fmt.Sprintf("Using KuaiDaiLi Proxy: %s", PROXY_HOST))
 
 		return &http.Client{
 			Timeout: 15 * time.Second,
