@@ -1,12 +1,13 @@
 package common
 
 import (
+	"sync"
+
 	"github.com/go-sql-driver/mysql"
 	"github.com/gookit/config/v2"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"sync"
 )
 
 // 数据库映射
