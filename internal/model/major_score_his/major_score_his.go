@@ -37,30 +37,39 @@ type MajorScoreHis struct {
 
 // CreateMajorScoresHis 创建历史分数记录
 func CreateMajorScoresHis(records []*MajorScoreHis) error {
+	// 按学校ID分组，减少索引竞争
+	schoolGroups := make(map[int][]*MajorScoreHis)
+	for _, record := range records {
+		schoolGroups[record.SchoolID] = append(schoolGroups[record.SchoolID], record)
+	}
+
+	// 每个学校的数据在单独的事务中处理
+	for _, schoolRecords := range schoolGroups {
+		if err := createSchoolRecords(schoolRecords); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func createSchoolRecords(records []*MajorScoreHis) error {
 	tx := common.DB.Begin()
-	// 使用 defer 确保事务一定会被处理
-	committed := false
 	defer func() {
-		if !committed {
+		if r := recover(); r != nil {
 			tx.Rollback()
 		}
 	}()
 
-	for _, record := range records {
-		if err := tx.Create(record).Error; err != nil {
-			if common.ErrMysqlDuplicate.Is(err) {
-				return nil
-			}
-			common.LOG.Error("CreateMajorScoresHis: " + err.Error())
-			return err
+	// 批量插入，而不是逐条插入
+	if err := tx.CreateInBatches(records, 100).Error; err != nil {
+		tx.Rollback()
+		if common.ErrMysqlDuplicate.Is(err) {
+			return nil
 		}
+		return err
 	}
 
-	if err := tx.Commit().Error; err != nil {
-		return fmt.Errorf("提交事务失败: %v", err)
-	}
-	committed = true
-	return nil
+	return tx.Commit().Error
 }
 
 // MustCreateMajorScoresHis 确保创建成功的历史分数记录
