@@ -93,8 +93,8 @@ func MigrateSpecialScoresHisOneSafe(schoolId int) {
 					}
 					page++
 					// 每页数据处理完后切换代理并等待
-					proxy.ChangeHttpProxyIP()
-					time.Sleep(500 * time.Millisecond)
+					// proxy.ChangeHttpProxyIP()
+					// time.Sleep(500 * time.Millisecond)
 				}
 			}
 		}

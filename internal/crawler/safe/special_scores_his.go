@@ -18,8 +18,7 @@ func MustGetSpecialScoresHis(schoolId, year, typeId, batchId, page int) *respons
 		resChan := make(chan *response.SpecialScoresHisResponse, 1)
 
 		go func() {
-			proxy.ChangeHttpProxyIP()
-			
+			// proxy.ChangeHttpProxyIP()
 			res, err := must.GetSpecialScoresHis(schoolId, year, typeId, batchId, page)
 			if err != nil {
 				common.LOG.Error(fmt.Sprintf(
