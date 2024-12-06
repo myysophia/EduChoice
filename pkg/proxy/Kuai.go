@@ -14,9 +14,9 @@ import (
 )
 
 var (
-	PROXY_HOST     = "as.n213.kdlfps.com:18866"
-	PROXY_USERNAME = "f2693221377"
-	PROXY_PASSWORD = "jx23httz"
+	PROXY_HOST     = "c710.kdltps.com:15818"
+	PROXY_USERNAME = "t13345149860891"
+	PROXY_PASSWORD = "te05wjcj"
 	mu             sync.RWMutex
 )
 

@@ -14,6 +14,10 @@ import (
 
 func GetPlanHis(schoolId, year, typeId, batchId, page int) (*response.PlanHisResponse, error) {
 	var plan *response.PlanHisResponse
+	client, err := proxy.NewHttpClientWithProxy()
+	if err != nil {
+		return nil, fmt.Errorf("proxy.NewHttpClientWithProxy: %w", err)
+	}
 this:
 	for {
 		planChan := make(chan *response.PlanHisResponse, 1)
@@ -36,7 +40,7 @@ this:
 					"user-agent":   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
 				}
 
-				client := &http.Client{}
+				//client := &http.Client{}
 				req, err := http.NewRequest("GET", url, nil)
 				if err != nil {
 					return
@@ -63,8 +67,8 @@ this:
 					return
 				}
 
-				common.LOG.Info(fmt.Sprintf("Response Type: %T", result))
-				common.LOG.Info(fmt.Sprintf("Response Content: %+v", result))
+				//common.LOG.Info(fmt.Sprintf("Response Type: %T", result))
+				//common.LOG.Info(fmt.Sprintf("Response Content: %+v", result))
 
 				resultMap, ok := result.(map[string]interface{})
 				if !ok {

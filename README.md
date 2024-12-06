@@ -44,7 +44,7 @@
 
 ## 技术实现要点
 
-### 1. 代理系统
+### 1. 代理系��
 - 多代理源支持
   - 快代理(付费)
   - ProxyScrape API(免费)
@@ -259,7 +259,7 @@ ticker.Stop() // 立即停止不再需要的 ticker
 }
 }
 
-3. 主要注意点：
+3. 主要���意点：
    - defer 语句只在函数返回时执行，而不是在代码块或循环结束时
    - 在循环中使用 defer 可能导致资源泄漏
    - 对于需要及时清理的资源，应该在不再需要时立即进行清理，而不是依赖 defer
@@ -316,3 +316,64 @@ func CreateRecords(records []*Record) error {
    - 使用 defer 处理回滚
    - 仅在所有操作都成功后提交
    - 检查提交操作的返回值
+
+### 5. GORM 批量插入最佳实践
+
+在处理大量数据插入时，需要平衡内存使用和事务一致性。以下是一个典型的批量插入示例：
+
+```go
+func CreateRecords(allRecords []*Record) error {
+    // 1. 首先按某个键分组
+    groups := make(map[int][]*Record)
+    for _, record := range allRecords {
+        groups[record.GroupID] = append(groups[record.GroupID], record)
+    }
+
+    // 2. 每组数据在一个事务中处理
+    for _, groupRecords := range groups {
+        tx := db.Begin()
+        committed := false
+        defer func() {
+            if !committed {
+                tx.Rollback()
+            }
+        }()
+
+        // CreateInBatches 只是为了优化内存使用
+        // 所有批次都在同一个事务中
+        if err := tx.CreateInBatches(groupRecords, 100).Error; err != nil {
+            return err
+        }
+
+        // 一个组的所有数据作为整体提交
+        if err := tx.Commit().Error; err != nil {
+            return fmt.Errorf("提交事务失败: %v", err)
+        }
+        committed = true
+    }
+    return nil
+}
+```
+
+主要知识点：
+
+1. CreateInBatches 的作用
+   - 将大量记录分成小批次处理
+   - 优化内存使用，避免一次性加载过多数据
+   - 所有批次在同一个事务中，保证数据一致性
+
+2. 分组处理策略
+   - 按业务主键（如学校ID）分组
+   - 每组数据在独立事务中处理
+   - 避免事务太大影响数据库性能
+
+3. 事务管理
+   - 使用 committed 标志跟踪事务状态
+   - defer 配合标志确保事务正确处理
+   - 事务粒度要适中，既要保证一致性，又要考虑性能
+
+4. 最佳实践
+   - 批次大小要根据实际数据量和内存情况调整
+   - 合理分组，避免单个事务过大
+   - 正确处理事务提交和回滚
+   - 考虑添加重试机制

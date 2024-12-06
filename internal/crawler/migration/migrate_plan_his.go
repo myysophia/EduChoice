@@ -45,7 +45,7 @@ func MigratePlanHisOneSafe(schoolId int) {
 	var allPlans []*school_plan_his.SchoolPlanHis
 
 	// 遍历年份
-	for year := 2024; year <= 2024; year++ {
+	for year := 2020; year <= 2024; year++ {
 		// 遍历批次
 		for _, batchId := range common.BatchIds {
 			// 遍历科类
