@@ -20,7 +20,7 @@ func MigratePlanHis() {
 
 	for _, schoolId := range list {
 		wgPlan.Add(1)
-		MigratePlanHisOneSafe(schoolId)
+		go MigratePlanHisOneSafe(schoolId)
 		time.Sleep(500 * time.Millisecond)
 	}
 	wgPlan.Wait()

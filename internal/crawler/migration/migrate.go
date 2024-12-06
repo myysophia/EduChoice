@@ -33,7 +33,7 @@ func Migrate() {
 	//MigrateSpecialScores()
 	//MigratePlanNum()
 
-	//MigrateSpecialScoresHis()
+	MigrateSpecialScoresHis()
 	MigratePlanHis()
 }
 

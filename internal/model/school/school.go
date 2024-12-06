@@ -52,10 +52,12 @@ func FindOne(id int) (*School, error) {
 func GetSchoolIdList() ([]int, error) {
 	var schoolIdList []int
 	if err := common.DB.Model(&School{}).Select("id").
+		Where("id not in(select DISTINCT school_id from school.major_score_his)").
 		//Where("id in (48,140,300,572)").
 		Find(&schoolIdList).Error; err != nil {
 		return nil, err
 	}
+	common.LOG.Info(fmt.Sprintf("SchoolIdList undeal size is : %d", len(schoolIdList)))
 	return schoolIdList, nil
 }
 

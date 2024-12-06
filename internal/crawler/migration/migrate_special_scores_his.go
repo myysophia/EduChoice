@@ -23,7 +23,7 @@ func MigrateSpecialScoresHis() {
 
 	for _, schoolId := range list {
 		wgSpecial.Add(1)
-		MigrateSpecialScoresHisOneSafe(schoolId)
+		go MigrateSpecialScoresHisOneSafe(schoolId)
 		// 每个学校处理完后切换代理并等待，避免被反爬
 		proxy.ChangeHttpProxyIP()
 		time.Sleep(3000 * time.Millisecond)
