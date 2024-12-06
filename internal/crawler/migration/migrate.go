@@ -29,12 +29,13 @@ var (
 )
 
 func Migrate() {
-	//MigrateSchoolScores()
-	//MigrateSpecialScores()
-	//MigratePlanNum()
+	MigrateSchoolScores()
+	MigrateSpecialScores()
+	MigratePlanNum()
 
-	MigrateSpecialScoresHis()
-	MigratePlanHis()
+	//针对陕西等未选科的省份
+	//MigrateSpecialScoresHis()
+	//MigratePlanHis()
 }
 
 func MigrateSchoolScores() {

@@ -53,6 +53,18 @@ func CreateMajorScoresHis(records []*MajorScoreHis) error {
 }
 
 func createSchoolRecords(records []*MajorScoreHis) error {
+	// 按主键ID去重
+	uniqueRecords := make(map[string]*MajorScoreHis)
+	for _, record := range records {
+		uniqueRecords[record.ID] = record
+	}
+
+	// 转换回切片
+	deduplicatedRecords := make([]*MajorScoreHis, 0, len(uniqueRecords))
+	for _, record := range uniqueRecords {
+		 deduplicatedRecords = append(deduplicatedRecords, record)
+	}
+
 	tx := common.DB.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -60,8 +72,7 @@ func createSchoolRecords(records []*MajorScoreHis) error {
 		}
 	}()
 
-	// 批量插入，而不是逐条插入
-	if err := tx.CreateInBatches(records, 100).Error; err != nil {
+	if err := tx.CreateInBatches(deduplicatedRecords, 100).Error; err != nil {
 		tx.Rollback()
 		if common.ErrMysqlDuplicate.Is(err) {
 			return nil

@@ -35,8 +35,8 @@ this:
 			resChan <- res
 		}()
 
-		ticker := time.NewTicker(5 * time.Second)
-		defer ticker.Stop()
+		ticker := time.NewTicker(15 * time.Second)
+		//defer ticker.Stop()
 
 		select {
 		case res = <-resChan:
@@ -53,7 +53,7 @@ this:
 			}
 		case <-ticker.C:
 			<-done
-			common.LOG.Error("get score his time out 5s")
+			common.LOG.Error("get score his time out 15s")
 			proxy.ChangeHttpProxyIP()
 		}
 	}

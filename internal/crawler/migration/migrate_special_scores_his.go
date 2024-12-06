@@ -99,7 +99,6 @@ func MigrateSpecialScoresHisOneSafe(schoolId int) {
 			}
 		}
 	}
-
 	major_score_his.MustCreateMajorScoresHis(allScores)
 }
 
