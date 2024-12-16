@@ -41,28 +41,27 @@ type Subject struct {
 }
 
 type ZYMockResp struct {
-	ChongSchools []*School `json:"chong_schools" form:"chong_schools"`
-	WenSchools   []*School `json:"wen_schools" form:"wen_schools"`
-	BaoSchools   []*School `json:"bao_schools" form:"bao_schools"`
+	ChongSchools []School `json:"chong_schools"`
+	WenSchools   []School `json:"wen_schools"`
+	BaoSchools   []School `json:"bao_schools"`
 }
 
 type School struct {
-	ID           int                  `json:"id" form:"id"`
-	Name         string               `json:"name" form:"name"`
-	Parts        map[int][]*Major     `json:"parts" form:"parts"`
-	HistoryInfos map[int]*HistoryInfo `json:"history_infos" form:"history_infos"`
-}
-
-type Major struct {
-	ID     int    `json:"id" form:"id"`
-	Name   string `json:"name" form:"name"`
-	Rate   int    `json:"rate" form:"rate"`
-	Weight int    `json:"weight" form:"weight"`
+	ID           int                     `json:"id"`
+	Name         string                  `json:"name"`
+	HistoryInfos map[string]HistoryInfo `json:"history_infos"`
+	Parts        map[string][]Major     `json:"parts"`
 }
 
 type HistoryInfo struct {
-	//Year          int `json:"year" form:"year"`
-	LowestScore   int `json:"lowest_score" form:"lowest_score"`
-	LowestRank    int `json:"lowest_rank" form:"lowest_rank"`
-	EnrollmentNum int `json:"enrollment_num" form:"enrollment_num"`
+	LowestScore    int `json:"lowest_score"`
+	LowestRank     int `json:"lowest_rank"`
+	EnrollmentNum  int `json:"enrollment_num"`
+}
+
+type Major struct {
+	ID     int     `json:"id"`
+	Name   string  `json:"name"`
+	Rate   float64 `json:"rate"`
+	Weight float64 `json:"weight"`
 }

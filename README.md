@@ -44,7 +44,7 @@
 
 ## 技术实现要点
 
-### 1. 代理系��
+### 1. 代理系统
 - 多代理源支持
   - 快代理(付费)
   - ProxyScrape API(免费)
@@ -96,7 +96,7 @@ major_score_his映射整个json过程中json.Unmarshal 无法正确解析。这�
 - 错误日志记录
 
 ### 5. 最佳实践
-- 错误提示应准确反映问题本质
+- ��误提示应准确反映问题本质
 - 区分反爬限制和数据格式错误
 - 提供有效的错误诊断信息
 
@@ -139,7 +139,7 @@ rawResponse["data"], rawResponse["data"])
    - 分层次处理复杂数据结构
 
 这种错误处理方式特别适合处理：
-- API 响应解析
+- API ���应解析
 - JSON 数据处理
 - 类型安全转换
 - 分级错误处理
@@ -211,7 +211,7 @@ this:
    - 优势：保证程序稳定性，不会因单个请求失败而中断
    - 实际应用：捕获并记录错误，允许程序继续运行
 
-5. 代理自动切换
+5. 代理自动切��
    - 项目使用场景：请求超时时自动更换代理IP
    - 实现方式：在超时分支中调用 proxy.ChangeHttpProxyIP()
    - 优势：提高请求成功率，绕过反爬限制
@@ -259,7 +259,7 @@ ticker.Stop() // 立即停止不再需要的 ticker
 }
 }
 
-3. 主要���意点：
+3. 主要注意点：
    - defer 语句只在函数返回时执行，而不是在代码块或循环结束时
    - 在循环中使用 defer 可能导致资源泄漏
    - 对于需要及时清理的资源，应该在不再需要时立即进行清理，而不是依赖 defer
@@ -308,7 +308,7 @@ func CreateRecords(records []*Record) error {
    - 提交失败时提供详细错误信息
 
 3. 资源清理
-   - 使用 defer 确保事务一定会被处理
+   - 使用 defer ��保事务一定会被处理
    - 避免事务悬而未决
 
 4. 最佳实践
@@ -355,7 +355,7 @@ func CreateRecords(allRecords []*Record) error {
 }
 ```
 
-主要知识点：
+���要知识点：
 
 1. CreateInBatches 的作用
    - 将大量记录分成小批次处理
@@ -377,3 +377,112 @@ func CreateRecords(allRecords []*Record) error {
    - 合理分组，避免单个事务过大
    - 正确处理事务提交和回滚
    - 考虑添加重试机制
+
+### 6. Web API 设计最佳实践
+
+#### 6.1 目录结构
+```
+internal/api/
+├── api.go            # 应用入口，初始化配置
+├── handler/          # 请求处理器
+│   ├── auth/         # 认证相关处理
+│   ├── middleware/   # 中间件
+│   ├── user/         # 用户相关处理
+│   └── zy/           # 专业相关处理
+├── router/           # 路由配置
+├── service/          # 业务逻辑层
+├── types/            # 请求/响应类型定义
+└── response/         # 统一响应处理
+```
+
+#### 6.2 核心功能
+
+1. 应用初始化 (api.go)
+   - 配置加载
+   - 日志初始化
+   - Redis 连接
+   - 数据库连接
+   - 路由注册
+
+2. 路由管理 (router/)
+   - 版本化 API (/api/v1)
+   - 模块化路由分组
+   - 中间件集成
+
+3. 认证系统 (handler/auth/)
+   - 用户注册
+   - 邮箱验证
+   - 登录授权
+   - Token 管理
+
+4. 响应标准化 (response/)
+   ```go
+   const (
+       SUCCESS = 1000            // 请求成功
+       FAIL = 1001              // 请求失败
+       REFRESH_CAPTCHA = 1002    // 需要刷新验证码
+       AUTHORIZATION_FAIL = 1004 // 鉴权失败
+   )
+   ```
+
+#### 6.3 最佳实践
+
+1. 分层设计
+   - Handler: 请求参数验证和响应处理
+   - Service: 业务逻辑实现
+   - Model: 数据访问层
+
+2. 错误处理
+   ```go
+   func Login(c *gin.Context) {
+       if err := c.ShouldBind(&req); err != nil {
+           response.FailMsg(c, "登录失败: " + err.Error())
+           return
+       }
+   }
+   ```
+
+3. 中间件使用
+   ```go
+   func useUser(r *gin.RouterGroup) {
+       u := r.Group("/user")
+       u.Use(middleware.Authorization)
+       u.POST("/info", user.SetInfo)
+   }
+   ```
+
+4. 请求参数验证
+   ```go
+   type LoginReq struct {
+       Email    string `json:"email" binding:"required,email"`
+       Password string `json:"password" binding:"required,min=6"`
+   }
+   ```
+
+5. 统一响应格式
+   ```go
+   type OkMsgDataResp[T types.LoginResp | types.ZYMockResp] struct {
+       Code    string `json:"code"`
+       Message string `json:"message"`
+       Data    T     `json:"data"`
+   }
+   ```
+
+#### 6.4 特色功能
+
+1. 专业推荐系统 (handler/zy/)
+   - 基于分数的学校匹配
+   - 考虑用户兴趣和性格
+   - 支持分数段筛选
+   - 结果缓存优化
+
+2. 用户信息管理 (handler/user/)
+   - 完整的用户信息设置
+   - 选科信息管理
+   - 分数和排名记录
+   - 兴趣和性格测评
+
+3. 缓存策略
+   - 使用 Redis 缓存推荐结果
+   - 支持缓存失效和更新
+   - 提供缓存清理机制

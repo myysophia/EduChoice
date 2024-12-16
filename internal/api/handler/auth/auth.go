@@ -1,81 +1,79 @@
 package auth
 
 import (
-	"github.com/big-dust/DreamBridge/internal/api/response"
-	"github.com/big-dust/DreamBridge/internal/api/service/auth"
-	"github.com/big-dust/DreamBridge/internal/api/types"
-	"github.com/big-dust/DreamBridge/pkg/email"
 	"github.com/gin-gonic/gin"
+	"github.com/big-dust/DreamBridge/internal/api/model/auth"
+	"github.com/big-dust/DreamBridge/internal/api/response"
+	authService "github.com/big-dust/DreamBridge/internal/api/service/auth"
+	"fmt"
 )
 
-// @Summary		注册
-// @Description	邮箱验证码注册
-// @Accept			json;multipart/form-data
-// @Produce		json
-// @Param			email		formData		string					true	"email"
-// @Param			username	formData		string					true	"username"
-// @Param			password	formData		string					true	"password"
-// @Success		200			{object}	response.OkMsgResp		"注册成功"
-// @Failure		400			{object}	response.FailMsgResp	"注册失败"
-// @Router			/api/v1/auth/resgister [post]
+// Register 处理注册请求
 func Register(c *gin.Context) {
-	req := &types.RegisterReq{}
-	if err := c.ShouldBind(req); err != nil {
-		response.FailMsg(c, "注册失败: "+err.Error())
+	var req auth.RegisterReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, "参数错误")
 		return
 	}
-	if !auth.OkEmailCode(req.Email, req.Code) {
-		response.FailMsg(c, "邮箱验证失败")
+
+	if !authService.OkEmailCode(req.Email, req.Code) {
+		response.Error(c, "验证码错误")
 		return
 	}
-	if err := auth.Register(req.Username, req.Email, req.Password); err != nil {
-		response.FailMsg(c, "注册失败: "+err.Error())
+
+	if err := authService.Register(req.Username, req.Email, req.Password); err != nil {
+		response.Error(c, "注册失败: " + err.Error())
 		return
 	}
-	response.OkMsg(c, "注册成功")
+
+	response.Success(c, nil)
 }
 
-// @Summary		登录
-// @Description	邮箱，密码登录
-// @Accept			json;multipart/form-data
-// @Produce		json
-// @Param			email		formData		string									true	"email"
-// @Param			password	formData		string									true	"password"
-// @Success		200			{object}	response.OkMsgDataResp[types.LoginResp]	"登录成功，返回token"
-// @Failure		400			{object}	response.FailMsgResp					"登录失败"
-// @Router			/api/v1/auth/login [post]
+type LoginReq struct {
+	Account  string `json:"account" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+// Login 处理登录请求
 func Login(c *gin.Context) {
-	req := &types.LoginReq{}
-	if err := c.ShouldBind(req); err != nil {
-		response.FailMsg(c, "登录失败: "+err.Error())
+	var req LoginReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		fmt.Printf("登录请求参数解析失败: %v, 原始数据: %v\n", err, c.Request.Body)
+		response.Error(c, "账号和密码不能为空")
 		return
 	}
-	token, err := auth.LoginGetToken(req.Email, req.Password)
+
+	fmt.Printf("收到登录请求: account=%s, password长度=%d\n", req.Account, len(req.Password))
+
+	token, err := authService.LoginGetToken(req.Account, req.Password)
 	if err != nil {
-		response.FailMsg(c, "登录失败: "+err.Error())
+		fmt.Printf("登录失败: %v\n", err)
+		response.Error(c, err.Error())
 		return
 	}
-	response.OkMsgData(c, "登录成功", &types.LoginResp{Token: token})
+
+	fmt.Printf("登录成功，生成token: %s\n", token)
+
+	response.Success(c, gin.H{
+		"token": token,
+	})
 }
 
-// @Summary	发送邮箱验证码
-// @Description
-// @Accept		json;multipart/form-data
-// @Produce	json
-// @Param		email	formData		string					true	"email"
-// @Success	200		{object}	response.OkMsgResp		"发送成功"
-// @Failure	400		{object}	response.FailMsgResp	"发送失败"
-// @Router		/api/v1/auth/email_code [get]
+// SendEmailVerificationCode 发送邮箱验证码
 func SendEmailVerificationCode(c *gin.Context) {
-	req := &types.SendEmailVerificationCodeReq{}
-	if err := c.ShouldBind(&req); err != nil {
-		response.FailMsg(c, "发送失败: "+err.Error())
+	var req struct {
+		Email string `json:"email" binding:"required,email"`
+	}
+	
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, "邮箱格式错误")
 		return
 	}
-	err := email.Send(req.Email)
-	if err != nil {
-		response.FailMsg(c, "发送失败: "+err.Error())
+
+	if err := authService.SendEmailCode(req.Email); err != nil {
+		response.Error(c, "发送验证码失败")
 		return
 	}
-	response.OkMsg(c, "发送成功")
+
+	response.Success(c, nil)
 }

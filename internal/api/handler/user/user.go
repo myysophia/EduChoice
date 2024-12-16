@@ -1,44 +1,79 @@
 package user
 
 import (
-	"github.com/big-dust/DreamBridge/internal/api/response"
-	"github.com/big-dust/DreamBridge/internal/api/service/user"
-	"github.com/big-dust/DreamBridge/internal/api/types"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/big-dust/DreamBridge/internal/api/response"
+	userService "github.com/big-dust/DreamBridge/internal/api/service/user"
+	userModel "github.com/big-dust/DreamBridge/internal/model/user"
 )
 
-// @Summary		设置用户报考信息
-// @Description	设置用户信息接口
-// @Accept			json;multipart/form-data
-// @Produce		json
-// @Param			Authorization		header		string					true	"token"
-// @Param			province			formData		string					true	"省份"
-// @Param			exam_type			formData		string					true	"考试类型"
-// @Param			school_type			formData		string					true	"学校类型"
-// @Param			subject				formData		object					true	"科目"
-// @Param			subject.formData.physics		formData		bool					true	"是否选择物理学"
-// @Param			subject.formData.history		formData		bool					true	"是否选择历史学"
-// @Param			subject.formData.chemistry	formData		bool					true	"是否选择化学"
-// @Param			subject.formData.biology		formData		bool					true	"是否选择生物学"
-// @Param			subject.formData.geography	formData		bool					true	"是否选择地理学"
-// @Param			subject.formData.politics	formData		bool					true	"是否选择政治学"
-// @Param			score				formData		int						true	"分数"
-// @Param			province_rank		formData		int						true	"省份排名"
-// @Param			holland				formData		string					true	"霍兰德"	Enums(conventional,investigative,realistic,enterprising,artistic,social)
-// @Param			interests			formData		[]string				true	"兴趣列表"
-// @Success		200					{object}	response.OkMsgResp		"更新信息成功"
-// @Failure		400					{object}	response.FailMsgResp	"更新信息失败"
-// @Router			/api/v1/user/info [post]
+// SetInfo 设置用户信息
 func SetInfo(c *gin.Context) {
-	req := &types.UserSetInfoReq{}
-	if err := c.ShouldBind(req); err != nil {
-		response.FailMsg(c, "更新信息失败: "+err.Error())
-		return
-	}
 	uid := c.GetInt("uid")
-	if err := user.SetUserInfo(uid, req); err != nil {
-		response.FailMsg(c, "更新信息失败: "+err.Error())
+	if uid == 0 {
+		response.Error(c, "用户未登录")
 		return
 	}
-	response.OkMsg(c, "更新信息成功")
+
+	var req userService.UserSetInfoReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		fmt.Printf("解析请求参数失败: %v\n原始数据: %v\n", err, c.Request.Body)
+		response.Error(c, "参数错误")
+		return
+	}
+
+	fmt.Printf("收到设置用户信息请求: uid=%d, data=%+v\n", uid, req)
+
+	if err := userService.SetInfo(uid, &req); err != nil {
+		fmt.Printf("设置用户信息失败: %v\n", err)
+		response.Error(c, "设置失败: "+err.Error())
+		return
+	}
+
+	fmt.Printf("设置用户信息成功: uid=%d\n", uid)
+	response.Success(c, nil)
+}
+
+// GetInfo 获取用户信息
+func GetInfo(c *gin.Context) {
+	// 从上下文获取用户ID
+	uid := c.GetInt("uid")
+	if uid == 0 {
+		response.Error(c, "未登录")
+		return
+	}
+
+	// 添加日志
+	fmt.Printf("获取用户信息请求, uid: %d\n", uid)
+
+	// 查询用户信息
+	u, err := userModel.FindOne(uid)
+	if err != nil {
+		fmt.Printf("查询用户信息失败: %v\n", err)
+		response.Error(c, "获取失败: "+err.Error())
+		return
+	}
+
+	// 添加日志
+	fmt.Printf("查询到用户信息: %+v\n", u)
+
+	response.Success(c, u)
+}
+
+// GetRecommend 获取用户推荐信息
+func GetRecommend(c *gin.Context) {
+	uid := c.GetInt("uid")
+	if uid == 0 {
+		response.Error(c, "用户未登录")
+		return
+	}
+
+	info, err := userService.GetRecommend(uid)
+	if err != nil {
+		response.Error(c, "获取推荐失败: "+err.Error())
+		return
+	}
+
+	response.Success(c, info)
 }

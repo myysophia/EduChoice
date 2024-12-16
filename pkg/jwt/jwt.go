@@ -1,55 +1,46 @@
 package jwt
 
 import (
+	"errors"
 	"fmt"
-	"github.com/big-dust/DreamBridge/internal/pkg/common"
 	"github.com/golang-jwt/jwt/v4"
+	"time"
 )
 
-func SignToken(uid int) (string, error) {
-	secretKey := common.CONFIG.String("jwt.secret_key")
-	iat := common.CONFIG.Int("jwt.issuer")
-	seconds := common.CONFIG.Int("jwt.expire_seconds")
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"exp": iat + seconds,
-		"iat": iat,
-		"uid": uid,
-	})
+var jwtSecret = []byte("your_jwt_secret")
 
-	return token.SignedString([]byte(secretKey))
+type Claims struct {
+	ID int `json:"id"`
+	jwt.StandardClaims
 }
 
-func Parse(tokenString string) (jwt.MapClaims, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(common.CONFIG.String("jwt.secret_key")), nil
+func SignToken(id int) (string, error) {
+	claims := Claims{
+		ID: id,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(jwtSecret)
+}
+
+func ParseToken(tokenString string) (*Claims, error) {
+	fmt.Printf("开始解析token: %s\n", tokenString)
+
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		return jwtSecret, nil
 	})
+
 	if err != nil {
+		fmt.Printf("解析token失败: %v\n", err)
 		return nil, err
 	}
 
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return nil, fmt.Errorf("parse token: invalid claim type")
+	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+		fmt.Printf("token有效, 解析结果: %+v\n", claims)
+		return claims, nil
 	}
 
-	if err = claims.Valid(); err != nil {
-		return nil, fmt.Errorf("invalid claims: %v", err)
-	}
-
-	return claims, nil
-}
-
-func ParseGetUID(tokenString string) (int, error) {
-	claims, err := Parse(tokenString)
-	if err != nil {
-		return 0, nil
-	}
-	uid, ok := claims["uid"].(float64)
-	if !ok {
-		return 0, fmt.Errorf("ParseGetUID: uid %v type: %T 类型断言失败", claims["uid"], claims["uid"])
-	}
-	return int(uid), nil
+	return nil, errors.New("invalid token")
 }

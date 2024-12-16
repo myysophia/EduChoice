@@ -1,25 +1,31 @@
 [mysql]
-addr =
-port =
-user =
-password =
-db =
-config = ""
-maxOpenConns = 0        #最大打开连接数 0为无限制
-maxIdleConns = 10000
+addr = "localhost"
+port = 3306
+user = "root"
+password = "123456"
+dbname = "dream_bridge"
 
-[proxy]
-switchon = true
-link =
+[redis]
+addr = "localhost"
+port = 6379
+password = ""
+db = 0
+
+[server]
+host = "localhost"
+port = "8080"
 
 [log]
-  level = "info"             #日志等级 debug || info || warn || error || dpanic || panic || fatal
-  showLine = true            #是否显示行
-  outType = "file"            #输出位置 console || file || all (console:输出到控制台 file:输出到日志文件 all:我全都要.jpg)
-  console_format = "console" #输出到控制台时的输出格式 json || console
-  file_format = "json"       #输出到文件时的输出格式 json || console
-  director = "log/runtime"   #日志输出目录
+  level = "debug"            #日志等级
+  filename = "./log/app.log" #日志文件路径
   maxSize = 1                #切割大小(单位:mb)
-  maxBackups = 10            #保留旧日志文件的最大数目(个)
-  maxAge = 7                 #保留旧日志文件的最大天数
-  compress = false           #是否压缩
+  maxBackups = 10           #保留旧日志文件的最大数目(个)
+  maxAge = 7                #保留旧日志文件的最大天数
+  compress = false          #是否压缩
+
+[email]
+  host = "smtp.qq.com"      # SMTP服务器地址
+  port = 587               # SMTP服务器端口
+  username = "your_email@qq.com"  # 发件人邮箱
+  password = "your_smtp_password" # SMTP授权码
+  from = "DreamBridge <your_email@qq.com>"  # 发件人
