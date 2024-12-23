@@ -1,11 +1,11 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/big-dust/DreamBridge/internal/api/handler/auth"
+	"github.com/big-dust/DreamBridge/internal/api/handler/major"
 	"github.com/big-dust/DreamBridge/internal/api/handler/user"
-	"github.com/big-dust/DreamBridge/internal/api/handler/zy"
 	"github.com/big-dust/DreamBridge/internal/api/middleware"
+	"github.com/gin-gonic/gin"
 )
 
 func Load(e *gin.Engine) {
@@ -29,7 +29,12 @@ func Load(e *gin.Engine) {
 			authed.GET("/user/info", user.GetInfo)
 
 			// 专业推荐相关
-			authed.GET("/zy/recommend", zy.GetRecommend)
+			// 专业推荐相关路由
+			zy := api.Group("/zy")
+			zy.Use(middleware.JWT())
+			{
+				zy.GET("/recommend", major.GetMajorRecommend) // 使用新的推荐处理器
+			}
 		}
 	}
 }

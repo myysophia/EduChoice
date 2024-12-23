@@ -2,6 +2,7 @@ package user
 
 import (
 	"github.com/big-dust/DreamBridge/internal/pkg/common"
+	"strings"
 )
 
 // User 用户模型
@@ -30,29 +31,22 @@ func (User) TableName() string {
 	return "users"
 }
 
+// GetInterests 获取兴趣爱好数组
+func (u *User) GetInterests() []string {
+	if u.Interests == nil {
+		return []string{}
+	}
+	return strings.Split(*u.Interests, ",")
+}
+
 // IsComplete 检查用户信息是否完整
 func (u *User) IsComplete() bool {
-	// 检查必填字段
-	if u.Province == nil || u.ExamType == nil || u.SchoolType == nil {
+	if u.Score == nil || u.ExamType == nil || u.Province == nil || 
+	   u.Interests == nil || u.Holland == nil {
 		return false
 	}
-
-	// 检查分数和排名
-	if u.Score == nil || u.ProvinceRank == nil {
-		return false
-	}
-
-	// 检查选科情况（至少选择物理或历史）
-	if u.Physics == nil || u.History == nil || (*u.Physics == false && *u.History == false) {
-		return false
-	}
-
-	// 检查兴趣和性格测试
-	if u.Holland == nil || u.Interests == nil {
-		return false
-	}
-
-	return true
+	interests := u.GetInterests()
+	return len(interests) > 0
 }
 
 // FindOne 根据ID查找用户
