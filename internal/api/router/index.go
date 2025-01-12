@@ -36,5 +36,6 @@ func Load(e *gin.Engine) {
 				zy.GET("/recommend", major.GetMajorRecommend) // 使用新的推荐处理器
 			}
 		}
+		InitSchoolRouter(api)
 	}
 }
