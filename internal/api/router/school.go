@@ -2,12 +2,14 @@ package router
 
 import (
 	"github.com/big-dust/DreamBridge/internal/api/handler"
+	"github.com/big-dust/DreamBridge/internal/api/middleware"
 	"github.com/gin-gonic/gin"
 )
 
 func InitSchoolRouter(r *gin.RouterGroup) {
 	schoolGroup := r.Group("/school")
+	schoolGroup.Use(middleware.JWT())
 	{
-		schoolGroup.POST("/cards", handler.GetSchoolCards)
+		schoolGroup.GET("/cards", handler.GetSchoolCards)
 	}
 }

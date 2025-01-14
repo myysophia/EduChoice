@@ -1,19 +1,31 @@
 package handler
 
 import (
-	"github.com/big-dust/DreamBridge/internal/api/types"
-	"github.com/gin-gonic/gin"
-	"strings"
 	"github.com/big-dust/DreamBridge/internal/api/response"
+	"github.com/big-dust/DreamBridge/internal/api/types"
 	"github.com/big-dust/DreamBridge/internal/pkg/common"
+	"github.com/gin-gonic/gin"
+	"strconv"
+	"strings"
 )
 
 // GetSchoolCards 获取学校卡片信息
 func GetSchoolCards(c *gin.Context) {
-	var req types.SchoolCardReq
-	if err := c.ShouldBind(&req); err != nil {
-		response.Error(c, "参数错误")
+	schoolIdsParam := c.Query("school_ids")
+	if schoolIdsParam == "" {
+		response.Error(c, "缺少学校ID参数")
 		return
+	}
+
+	schoolIdsStr := strings.Split(schoolIdsParam, ",")
+	var schoolIds []int
+	for _, idStr := range schoolIdsStr {
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			response.Error(c, "无效的学校ID")
+			return
+		}
+		schoolIds = append(schoolIds, id)
 	}
 
 	// 构建查询SQL
@@ -44,8 +56,7 @@ func GetSchoolCards(c *gin.Context) {
         AND sch.id IN (?)
         AND scores.type_id = 1
         AND scores.tag = "普通类"
-        AND scores.batch_name LIKE "%本科%"
-    ORDER BY scores.lowest ASC`
+        AND scores.batch_name LIKE "本科%"`
 
 	var results []struct {
 		SchoolName            string `db:"school_name"`
@@ -68,7 +79,7 @@ func GetSchoolCards(c *gin.Context) {
 		SubjectType           string `db:"subject_type"`
 	}
 
-	if err := common.DB.Raw(query, req.SchoolIds).Scan(&results).Error; err != nil {
+	if err := common.DB.Raw(query, schoolIds).Scan(&results).Error; err != nil {
 		response.Error(c, "查询失败")
 		return
 	}
