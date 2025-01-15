@@ -41,7 +41,7 @@ func GetSchoolCards(c *gin.Context) {
         sch.website,
         sch.recruitment_phone,
         sch.email,
-        sch.double_first_class_disciplines,
+        COALESCE(sch.double_first_class_disciplines, '') as double_first_class_disciplines,
         scores.tag,
         scores.year,
         scores.lowest,
@@ -70,7 +70,7 @@ func GetSchoolCards(c *gin.Context) {
 		Website               string `db:"website"`
 		RecruitmentPhone      string `db:"recruitment_phone"`
 		Email                 string `db:"email"`
-		FirstClassDisciplines string `db:"double_first_class_disciplines"`
+		DoubleFirstClassDisciplines string `db:"double_first_class_disciplines"`
 		Tag                   string `db:"tag"`
 		Year                  int    `db:"year"`
 		Lowest                int    `db:"lowest"`
@@ -87,7 +87,20 @@ func GetSchoolCards(c *gin.Context) {
 	// 转换为响应格式
 	var resp []types.SchoolCardResp
 	for _, r := range results {
-		disciplines := strings.Split(r.FirstClassDisciplines, ",")
+		// 处理一级学科字符串
+		var disciplines []string
+		if r.DoubleFirstClassDisciplines != "" {
+			disciplines = strings.Split(strings.TrimSpace(r.DoubleFirstClassDisciplines), " ")
+			// 过滤空字符串
+			var filteredDisciplines []string
+			for _, d := range disciplines {
+				if d != "" {
+					filteredDisciplines = append(filteredDisciplines, d)
+				}
+			}
+			disciplines = filteredDisciplines
+		}
+
 		resp = append(resp, types.SchoolCardResp{
 			Name:                  r.SchoolName,
 			BriefIntroduction:     r.BriefIntroduction,
